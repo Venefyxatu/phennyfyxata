@@ -2,9 +2,10 @@ from django.shortcuts import render_to_response
 
 from phennyfyxata.scores.models import Writer
 
-def registerscore(request, nickname, score):
+def registerscore(request, nickname):
     if request.method == 'POST':
         writer, created = Writer.objects.get_or_create(nick=nickname)
+        score = request.POST['score']
         writer.totalscore += score
         writer.totalwars += 1
         writer.save()
