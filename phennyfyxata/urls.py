@@ -5,6 +5,7 @@ from django.conf.urls.defaults import *
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+    (r'', include('phennyfyxata.scores.urls')),
     # Example:
     # (r'^phennyfyxata/', include('phennyfyxata.foo.urls')),
 
