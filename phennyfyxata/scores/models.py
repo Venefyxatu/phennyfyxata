@@ -8,8 +8,9 @@ class Writer(models.Model):
 class War(models.Model):
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    finished = models.BooleanField(default=False)
 
 class ParticipantScore(models.Model):
     writer = models.ForeignKey(Writer)
     war = models.ForeignKey(War)
-    score = models.IntegerField(default=0)
+    score = models.IntegerField(default=0, blank=True)

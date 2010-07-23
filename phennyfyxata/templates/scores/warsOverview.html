@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<table>
+    <tr><th>War ID</th><th>Timestamp</th><th>Participants</th></tr>
+    {% for war in wars %}
+        <tr><td>{{ war.id }}</td><td>{{ war.timestamp }}</td><td>{{ war.participants }}</td></tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
