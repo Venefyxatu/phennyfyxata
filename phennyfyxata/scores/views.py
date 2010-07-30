@@ -6,13 +6,18 @@ from phennyfyxata.scores.models import Writer
 from phennyfyxata.scores.models import ParticipantScore
 
 def registerScore(request, nickname):
+    print "We're in registerScore"
     if request.method == 'POST':
+        print "POST method found"
         writer, writerCreated = Writer.objects.get_or_create(nick=nickname)
+        print "Writer is created: %s" % writerCreated
         if writerCreated:
             writer.save()
 
         score = request.POST['score']
         warId = request.POST['war']
+
+        print "Score is %s. War ID is %s" % (score, warId)
 
         war, warCreated = War.objects.get_or_create(id=warId)
         if warCreated:
@@ -21,6 +26,7 @@ def registerScore(request, nickname):
         ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
         ps.score = score
         ps.save()
+    return HttpResponse("OK")
 
 
 def writersOverview(request):
