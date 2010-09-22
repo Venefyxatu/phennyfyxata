@@ -9,5 +9,12 @@
 <b>Average score per war:</b> {% averagescore writer.nick %}<br />
 <b>Wars won:</b> {% warswon writer.nick %}<br />
 
+<table>
+    <tr>
+        <th>War ID</th><th>Starttime</th><th>Endtime</th><th>Score</th>
+    </tr>
+    {% wars_for_writer writer.nick %}
+</table>
+
 {% endblock %}
 

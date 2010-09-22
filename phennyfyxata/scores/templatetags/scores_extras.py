@@ -128,9 +128,27 @@ class WarParticipantDetailsNode(template.Node):
         participantScores = ParticipantScore.objects.filter(war__id=war_id).order_by("-score")
         return "".join(map(lambda x: '<tr><td><a href="/writers/%s/overview/">%s</a></td><td>%s</td></tr>' % (x.writer.nick, x.writer.nick, x.score), participantScores))
 
+def wars_for_writer(parser, token):
+    try:
+        tag_name, writer_name = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires a single argument" % token.contents.split()[0]
+
+    return WarsForWriterNode(writer_name)
+
+class WarsForWriterNode(template.Node):
+    def __init__(self, writer_name):
+        self.writer_name = template.Variable(writer_name)
+
+    def render(self, context):
+        writer_name = self.writer_name.resolve(context)
+        participantWars = ParticipantScore.objects.filter(writer__nick=writer_name).order_by("war__id")
+        return "".join(map(lambda x: '<tr><td><a href="/wars/%s/overview/">%s</a></td><td>%s</td><td>%s</td><td>%s</td>' % (x.war.id, x.war.id, x.war.timestamp.strftime("%Y-%m-%d %H:%M"), x.war.endtime.strftime("%Y-%m-%d %H:%M"), x.score), participantWars))
+
 register.tag("writer_row", format_writer_row)
 register.tag("war_participants", war_participants)
 register.tag("warcount", war_count)
 register.tag("averagescore", average_score)
 register.tag("warswon", wars_won)
 register.tag("war_participant_details", war_participant_details)
+register.tag("wars_for_writer", wars_for_writer)
