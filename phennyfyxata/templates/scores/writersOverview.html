@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 
+{% load scores_extras %}
+
 {% block body %}
 
 <table>
     <tr><th>Nickname</th><th>Total words written in wars</th><th>Total wars fought</th></tr>
     {% for writer in writers %}
-        <tr><td>{{ writer.nick }}</td><td>{{ writer.totalscore }}</td><td>{{ writer.totalwars }}</td></tr>
+        {% writer_row writer.nick %}
     {% endfor %}
 </table>
 

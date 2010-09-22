@@ -93,8 +93,8 @@ def lock(lockName):
 def registerScore(phenny, arguments, user):
     phenny.say("Registering score %s for %s" % (arguments, user))
 
-    djangoUrl = "http://127.0.0.1:8000/%s/registerscore" % user
-    urldata = {"score": arguments[1], "war":"war_%s" % arguments[0]}
+    djangoUrl = "http://127.0.0.1:8000/%s/registerscore/" % user
+    urldata = {"score": arguments[1], "war": arguments[0].strip('war')}
 
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(djangoUrl, data=urllib.urlencode(urldata))

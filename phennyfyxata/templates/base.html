@@ -2,12 +2,24 @@
 <html>
     <head>
         <title>Phennyfyxata</title>
+        <link rel="stylesheet" type="text/css" href="/phenny.css" />
         {% block extra_head %}
         {% endblock %}
     </head>
 
     <body>
-        {% block body %}
-        {% endblock %}
+        <div class="menu">
+            <span class="menuitem"><a class="menu" href="/wars/">Wars</a></span><span class="menuitem-right"><a class="menu" href="/writers/">Writers overview</a></span>
+        </div>
+        <p />
+        <div class="info">
+            {% block body %}
+            {% endblock %}
+            <div class="footer">
+                This application was created by <a target="_blank" href="http://www.nanowrimo.org/eng/user/133582">Venefyxatu</a> and is neither affiliated with nor endorsed by the Office of Letters and Light. <br />
+                In case of issues, please contact me via <a href="http://blog.venefyxatu.be/contact">this form</a> or ping venefyxatu in #dutchnano on <a target="_blank" href="http://www.freenode.net">Freenode</a>
+            </div>
+        </div>
+
     </body>
 </html>
