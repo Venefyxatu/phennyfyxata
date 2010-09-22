@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('phennyfyxata.scores.views', 
+        url(r'^$', 'goToWars'),
         url(r'^writers/(?P<nickname>.+)/registerscore/$', 'registerScore'),
         url(r'^writers/(?P<nickname>.+)/overview/$', 'singleWriterOverview'),
         url('^writers/$', 'writersOverview'),

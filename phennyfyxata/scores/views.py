@@ -1,8 +1,9 @@
 import time
 import logging
 
-from django.http import HttpResponse
 from django.http import Http404
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -32,6 +33,9 @@ def registerScore(request, nickname):
         ps.save()
     return HttpResponse("OK")
 
+
+def goToWars(request):
+    return HttpResponseRedirect("/wars/")
 
 def writersOverview(request):
     writers = Writer.objects.all().order_by("nick")
