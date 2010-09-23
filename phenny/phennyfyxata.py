@@ -101,7 +101,7 @@ def showHelp(phenny):
     phenny.say("Make sure to use 24-hour format times, because I don't understand anything else. I'm dumb like that.")
     phenny.say("e.g. if you want a war between 15:00 and 15:15, say .war 15:00 15:15")
     phenny.say("If you just want me to end a war in progress, use the word 'busy' instead of a starttime.")
-    phenny.say("I'll also keep score when the war is done. Just say .%s <count> and I'll record it to your nickname." % _SCORE_COMMAND)
+    phenny.say("I'll also keep score when the war is done. Just say .%s <warnr> <count> and I'll record it to your nickname." % _SCORE_COMMAND)
 
 def lock(lockName):
     f = open(os.path.join(_LOCKPATH, lockName), 'w')
@@ -151,7 +151,6 @@ def phennyfyxata(phenny, input):
 
     #@TODO: countdown to end of war
     #@TODO: Twitter integration
-    #@TODO: Keep score
 
     if not arguments or arguments == 'help':
         showHelp(phenny)
@@ -161,10 +160,8 @@ def phennyfyxata(phenny, input):
     splitArguments = argSanitiser.sanitise(arguments)
 
     try:
-        print "Unvalidated arguments"
         argValidator = ArgumentValidator.create(command)
         argValidator.validate(splitArguments)
-        print "Arguments validated"
     except PhennyError, e:
         phenny.say(e.__str__().lstrip("'").rstrip("'"))
         return
@@ -185,6 +182,10 @@ def phennyfyxata(phenny, input):
 
     startepoch = convertToEpoch(splitArguments[0])
     endepoch = convertToEpoch(splitArguments[1])
+
+    if startepoch > endepoch:
+        phenny.say("I don't know about you, but I can't travel back in time to end a war before it begins. Ask venefyxatu to equip me with a flux capacitor if you really want that to happen.")
+        return
 
     lock(lockName="start_%s" % str(startepoch))
     lock(lockName="stop_%s" % str(endepoch))
