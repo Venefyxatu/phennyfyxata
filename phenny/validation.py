@@ -98,9 +98,11 @@ class WarValidator(ArgumentValidator):
 
 class ScoreValidator(ArgumentValidator):
     def validate(self, arguments):
-        helpmessage = 'You need to tell me which war you want to register your score to, and your score, like so: .%s war1 478' % _SCORE_COMMAND
+        helpmessage = 'You need to tell me which war you want to register your score to, and your score, like so: .%s 1 478' % _SCORE_COMMAND
         self.checkParameterCount(arguments, 2, helpmessage)
         try:
-            int(arguments[1])
+            intScore = int(arguments[1])
+            if intScore < 0:
+                raise ArgumentTypeError("The goal is to *WRITE* words, not delete them ...")
         except ValueError:
             raise ArgumentTypeError("I'll need a numeric score.")

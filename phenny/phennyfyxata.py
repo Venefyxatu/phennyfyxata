@@ -69,6 +69,7 @@ class War:
 
             self._phenny.say("It is %s according to my clock. Good luck!" % formatepoch(self._startEpoch))
             self._phenny.say("----------GO----------")
+        self._phenny.say("War %s started" % self.id)
 
     def waitForWarEnd(self):
         epochlock = os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch))
@@ -102,6 +103,7 @@ def showHelp(phenny):
     phenny.say("e.g. if you want a war between 15:00 and 15:15, say .war 15:00 15:15")
     phenny.say("If you just want me to end a war in progress, use the word 'busy' instead of a starttime.")
     phenny.say("I'll also keep score when the war is done. Just say .%s <warnr> <count> and I'll record it to your nickname." % _SCORE_COMMAND)
+    phenny.say("Scores can be seen on http://phenny.venefyxatu.be")
 
 def lock(lockName):
     f = open(os.path.join(_LOCKPATH, lockName), 'w')
@@ -113,7 +115,12 @@ def registerScore(phenny, arguments, user):
     djangoUrl = "http://127.0.0.1/writers/%s/registerscore/" % user
     urldata = {"score": arguments[1], "war": arguments[0]}
 
-    openUrl(djangoUrl, urldata)
+    try:
+
+        openUrl(djangoUrl, urldata)
+    except urllib2.HTTPError:
+        phenny.say("The records show that war %s doesn't exist. I don't lose documents, so you must've gotten the ID wrong :-)" % arguments[0])
+        return
 
     phenny.say("Score %s registered for %s." % (arguments[1], user))
 
