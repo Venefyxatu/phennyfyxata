@@ -29,9 +29,25 @@ class War:
             if not isinstance(startEpoch, float):
                 raise ArgumentTypeError("startEpoch should be a float")
             self._startEpoch = startEpoch
+        else:
+            self._startEpoch = time.time()
         if not isinstance(endEpoch, float):
             raise ArgumentTypeError("endEpoch should be a float")
         self._endEpoch = endEpoch
+
+        if self._endEpoch < time.time():
+            return
+
+
+        djangoUrl = "http://127.0.0.1/wars/new/"
+
+        urldata = {"endtime": self._endEpoch}
+
+        print "Opening url"
+
+        url = openUrl(djangoUrl, urldata)
+        print "Done"
+        self.id = url.read()
 
     def signalStart(self):
         epochlock = os.path.join(_LOCKPATH, "start_%s" % str(self._startEpoch))
@@ -60,6 +76,7 @@ class War:
             os.remove(epochlock)
             time.sleep(self._endEpoch - time.time())
             self._phenny.say("---------STOP---------")
+        self._phenny.say("War %s has ended (%s - %s). Feel free to register your score with .score %s <score>" % (self.id, formatepoch(self._startEpoch), formatepoch(self._endEpoch), self.id))
 
     def endWar(self):
         f = open(os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch)), 'w')
@@ -91,16 +108,23 @@ def lock(lockName):
     f.close()
 
 def registerScore(phenny, arguments, user):
-    phenny.say("Registering score %s for %s" % (arguments, user))
+    print "Registering score %s for %s" % (arguments, user)
 
-    djangoUrl = "http://127.0.0.1:8000/%s/registerscore/" % user
-    urldata = {"score": arguments[1], "war": arguments[0].strip('war')}
+    djangoUrl = "http://127.0.0.1/writers/%s/registerscore/" % user
+    urldata = {"score": arguments[1], "war": arguments[0]}
 
+    openUrl(djangoUrl, urldata)
+
+    phenny.say("Score %s registered for %s." % (arguments[1], user))
+
+def openUrl(url, urldata):
     opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(djangoUrl, data=urllib.urlencode(urldata))
+    request = urllib2.Request(url, data=urllib.urlencode(urldata))
     request.add_header('Content-Type', 'text/http')
     request.get_method = lambda: 'POST'
     url = opener.open(request)
+
+    return url
 
 def phennyfyxata(phenny, input): 
     """

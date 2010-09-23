@@ -8,7 +8,6 @@ _SCORE_COMMAND = 'score'
 class PhennyError(Exception):
     def __str__(self):
         return repr(self.args[0].lstrip("'").rstrip("'").lstrip('"').rstrip('"'))
-
 class ArgumentFormatError(PhennyError):
     pass
 
@@ -55,7 +54,6 @@ class ScoreSanitiser(ArgumentSanitiser):
     def sanitise(self, argumentString):
         splitArguments = argumentString.split()
         splitArguments = self.argumentsToLowerCase(splitArguments)
-        splitArguments = self.orderArguments(splitArguments)
 
         return splitArguments
 
