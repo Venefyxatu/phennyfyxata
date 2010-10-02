@@ -5,7 +5,7 @@ class Writer(models.Model):
 
 class War(models.Model):
     id = models.AutoField(primary_key=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     endtime = models.DateTimeField()
     finished = models.BooleanField(default=False)
 

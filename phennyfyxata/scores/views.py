@@ -60,11 +60,15 @@ def singleWarOverview(request, war_id):
     return render_to_response('scores/singleWarOverview.html', {'war': war})
 
 def createWar(request):
+    logging.log(logging.INFO, "Creating a new war")
     if request.method == 'POST':
         logging.log(logging.INFO, "POST method found in createWar")
+        logging.log(logging.INFO, "POST data: %s" % request.POST)
         endtime = request.POST['endtime']
+        starttime = request.POST['starttime']
+        logging.log(logging.INFO, "Start time is %s (type %s)" % (starttime, type(starttime)))
         logging.log(logging.INFO, "End time is %s (type %s)" % (endtime, type(endtime)))
-        war = War.objects.create(endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
+        war = War.objects.create(timestamp=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(starttime))), endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
         logging.log(logging.INFO, "Created war")
         html = str(war.id)
         return HttpResponse(html)

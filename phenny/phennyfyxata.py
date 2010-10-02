@@ -6,6 +6,7 @@ import os
 import time
 import urllib
 import urllib2
+import datetime
 
 from validation import _WAR_COMMAND, _SCORE_COMMAND
 from validation import PhennyError
@@ -36,12 +37,15 @@ class War:
         self._endEpoch = endEpoch
 
         if self._endEpoch < time.time():
+            print "endEpoch is in the past"
             return
 
 
         djangoUrl = "http://127.0.0.1/wars/new/"
 
-        urldata = {"endtime": self._endEpoch}
+        urldata = {
+                "starttime": self._startEpoch,
+                "endtime": self._endEpoch}
 
         print "Opening url"
 
@@ -91,11 +95,18 @@ class War:
 
         self.waitForWarEnd()
 
-def convertToEpoch(timeToConvert):
+def convertToEpoch(timeToConvert, nextDay = False):
     resultHour, resultMin = timeToConvert.split(':')
     lt = time.localtime()
     resultEpoch = time.mktime((lt[0], lt[1], lt[2], int(resultHour), int(resultMin), 0, lt[6], lt[7], lt[8]))
-    return resultEpoch
+    if resultEpoch < time.time() or nextDay:
+        # Set nextDay to True if we have a timestamp that is in the past. 
+        # e. g. if we have a starttime in the past, this is a simple way to flag that the endtime needs to be in the past as well
+        nextDay = True
+        day = (24*60)*60
+        tomorrow = datetime.datetime.fromtimestamp(time.time() + day)
+        resultEpoch = time.mktime((tomorrow.year, tomorrow.month, tomorrow.day, int(resultHour), int(resultMin), 0, tomorrow.weekday(), 0, lt[8]))
+    return resultEpoch, nextDay
 
 def showHelp(phenny):
     phenny.say("I'll tell you when to start and stop writing if you give me a start- and endtime.")
@@ -182,13 +193,13 @@ def phennyfyxata(phenny, input):
             return
 
     if 'busy' in splitArguments:
-        endTime = convertToEpoch(filter(applicabletime, splitArguments)[0])
+        endTime, nextDay = convertToEpoch(filter(applicabletime, splitArguments)[0])
         war = War(phenny, endEpoch=endTime)
         return war.endWar()
 
 
-    startepoch = convertToEpoch(splitArguments[0])
-    endepoch = convertToEpoch(splitArguments[1])
+    startepoch, nextDay = convertToEpoch(splitArguments[0])
+    endepoch, nextDay = convertToEpoch(splitArguments[1], nextDay)
 
     if startepoch > endepoch:
         phenny.say("I don't know about you, but I can't travel back in time to end a war before it begins. Ask venefyxatu to equip me with a flux capacitor if you really want that to happen.")
