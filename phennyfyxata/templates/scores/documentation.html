@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="langmenu">
+    [ <a href="/documentation/nl/">Nederlands</a> ] [ English ]
+</div>
+
+If you join the #dutchnano channel on Freenode, you'll see <b>Phennyfyxata</b> among the list of chatters. She is a chatbot - more specifically a warbot. This means that she can signal the start and end of a wordwar, as well as keep track of your score. She can be controlled with a set of simple commands that you just need to say in the chatroom.<br />
+<div class="important">Notice that all the commands start with a dot!</div>
+
+<ul>
+    <li /><span class="command">.war [starttime] [endtime]</span><br />
+    She'll tell you when to start and stop writing at the times you specify. You'll need to use a 24-hour format, like so:<br />
+    .war 14:20 14:40
+    <li /><span class="command">.war busy [endtime]</span><br />
+    If a war is already in progress and you just want her to end it, this is the way to let her know. Instead of a starttime, you use the word busy.
+    <li /><span class="command">.score [warnr] [score]</span><br />
+    Register your score with this command. Don't worry too much about the war number - she will tell you what it is when the war starts and when it ends. 
+    <li /><span class="command">.help</span><br />
+    If you need some help, there are a few topics she knows about. If you have a request for something else she should know about, don't hesitate to ask venefyxatu!
+    <ul>
+        <li /><span class="command">.help war</span><br />
+        Brief explanation about how to use Phenny to time a war.
+        <li /><span class="command">.help smileys</span><br />
+        A few of the more commonly used smileys
+        <li /><span class="command">.help nick</span><br />
+        How to change your nickname
+        <li /><span class="command">.help motivation</span><br />
+        Not feeling very motivated? Let Phenny help you!
+    </ul>
+</ul>
+
+{% endblock %}

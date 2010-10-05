@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="langmenu">
+    [ Nederlands ] [ <a href="/documentation/">English</a> ]
+</div>
+
+Als je naar het #dutchnano kanaal op Freenode gaat zal je daar <b>Phennyfyxata</b> zien tussen de chatters. Dit is een chatbot - een warbot om specifiek te zijn. Dat houdt in dat ze zowel het start-en stopsein kan geven voor een wordwar als je score bijhouden. Je kan haar aansturen met enkele eenvoudige commando's die je gewoon in de chat moet zetten.<br />
+<div class="important">Merk op dat alle commando's met een punt beginnen!</div>
+
+<ul>
+    <li /><span class="command">.war [begintijd] [eindtijd]</span><br />
+    Phenny zal het start-en stopsein geven op de tijden die je specifieert. Je moet het 24-uur formaat gebruiken, zo:<br />
+    .war 14:20 14:40
+    <li /><span class="command">.war busy [eindtijd]</span><br />
+    Als er al een war bezig is en je wil gewoon het stopsein krijgen kan je dat op deze manier aangeven. In plaats van een starttijd gebruik je dan gewoon het woord busy.
+    <li /><span class="command">.score [warnr] [score]</span><br />
+    Je kan je score registreren met dit commando. Maak je niet teveel zorgen over het nummer van de war - Phenny zal dat meedelen op het moment dat een oorlog start en stopt.
+    <li /><span class="command">.help</span><br />
+    Als je wat hulp nodig hebt kan Phenny wel helpen met een paar onderwerpen. Als je een idee hebt voor iets waar ze nog mee kan helpen, laat het dan zeker even weten aan venefyxatu!
+    <ul>
+        <li /><span class="command">.help war</span><br />
+        Een korte uitleg over hoe je Phenny gebruikt om een war te timen.
+        <li /><span class="command">.help smileys</span><br />
+        Enkele van de vaak voorkomende smileys
+        <li /><span class="command">.help nick</span><br />
+        Hoe je nickname te veranderen
+        <li /><span class="command">.help motivation</span><br />
+        Niet erg gemotiveerd? Laat Phenny helpen!
+    </ul>
+</ul>
+
+{% endblock %}

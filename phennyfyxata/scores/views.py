@@ -52,6 +52,12 @@ def warsOverview(request):
     wars = War.objects.all()
     return render_to_response('scores/warsOverview.html', {'wars': wars})
 
+def documentation(request):
+    return render_to_response('scores/documentation.html')
+
+def documentationDutch(request):
+    return render_to_response('scores/documentation.nl.html')
+
 def singleWarOverview(request, war_id):
     try:
         war = War.objects.get(id=war_id)
