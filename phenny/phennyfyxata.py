@@ -109,12 +109,12 @@ def convertToEpoch(timeToConvert, nextDay = False):
     return resultEpoch, nextDay
 
 def showHelp(phenny):
-    phenny.say("I'll tell you when to start and stop writing if you give me a start- and endtime.")
-    phenny.say("Make sure to use 24-hour format times, because I don't understand anything else. I'm dumb like that.")
-    phenny.say("e.g. if you want a war between 15:00 and 15:15, say .war 15:00 15:15")
-    phenny.say("If you just want me to end a war in progress, use the word 'busy' instead of a starttime.")
-    phenny.say("I'll also keep score when the war is done. Just say .%s <warnr> <count> and I'll record it to your nickname." % _SCORE_COMMAND)
-    phenny.say("Scores can be seen on http://phenny.venefyxatu.be")
+    phenny.say("Ik zal je vertellen wanneer je moet starten en stoppen met schrijven als je mij een begin- en einduur geeft.")
+    phenny.say("Zorg ervoor dat je het 24-uren formaat gebruikt, want anders raak ik in de war.")
+    phenny.say("bv. als je een war wil tussen 15:00 en 15:15, dan zeg je .war 15:00 15:15")
+    phenny.say("Als ik gewoon het stopsignaal moet geven gebruik je het woordje 'busy' in plaats van een starttijd")
+    phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon %s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
+    phenny.say("Je kan de scores bekijken op http://phenny.venefyxatu.be")
 
 def lock(lockName):
     f = open(os.path.join(_LOCKPATH, lockName), 'w')
