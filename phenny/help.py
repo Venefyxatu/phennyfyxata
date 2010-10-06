@@ -15,6 +15,7 @@ def motivation_help(phenny, nick):
             "en wat gebeurde er toen, %s?" % nick,
             "%s, laat je characters een hapje eten?" % nick,
             "%s, laat een van je characters een boterham smeren en beschrijf alles in detail. Maar wel een GROTE boterham he, want ik heb honger!" % nick,
+            "Misschien helpt dit? http://phenny.venefyxatu.be/inspiration.jpg",
             ]
     phenny.say(random.choice(choices))
 
