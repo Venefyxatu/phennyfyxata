@@ -39,11 +39,11 @@ def war_help(phenny):
     phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon %s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
     phenny.say("Je kan de scores bekijken op http://phenny.venefyxatu.be")
 
-def phennyfyxata(phenny, input): 
+def help(phenny, input): 
     """
     Show the help
     """
-    print "New command received"
+    print "New command received in help module"
     arguments = input.group(2)
     command = input.group(1)
 
@@ -59,8 +59,8 @@ def phennyfyxata(phenny, input):
         general_help(phenny)
 
 
-phennyfyxata.commands = ["help", ]
-phennyfyxata.example = '.help'
+help.commands = ["help"]
+help.example = '.help'
 
 if __name__ == '__main__': 
     print __doc__.strip()
