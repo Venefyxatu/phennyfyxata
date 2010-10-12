@@ -4,20 +4,39 @@
 import random
 
 from validation import _SCORE_COMMAND
+from collections import deque
 
 topics = ["war", "smileys", "nick", "motivation"]
 
+topicCache = deque()
+
 def motivation_help(phenny, nick):
     choices = ["GA SCHRIJVEN, %s!" % nick,
-            "Zou je niet beter wat schrijven in plaats van mij te storen?",
+            "Zou je niet beter wat schrijven in plaats van mij te storen? Ik ben al gestoord genoeg...",
             "Gewoon het ene woord na het andere zetten!",
             "Kom op, je kunt het, %s!" % nick,
             "en wat gebeurde er toen, %s?" % nick,
             "%s, laat je characters een hapje eten?" % nick,
             "%s, laat een van je characters een boterham smeren en beschrijf alles in detail. Maar wel een GROTE boterham he, want ik heb honger!" % nick,
             "Misschien helpt dit? http://phenny.venefyxatu.be/inspiration.jpg",
+            "Je zou me heel gelukkig maken als je wat ging schrijven, %s" % nick,
+            "30 november nadert sneller dan je zou denken... met een beetje moeite haal je het wel!",
+            "Geef me een S! Geef me een c! Geef me een h! Geef me... weet je wat? Schrij-ven! Schrij-ven! Schrij-ven! *\o/* o//** **\\o */o\* *\o/*",
+            "Misschien moet je een war organiseren? Wars helpen altijd!",
+            "Schrijf een zin waarin je het woord tafelpoot gebruikt",
+            "Komkom, nog een klein beetje. *aait %s over het hoofd*" % nick,
+            "Hup %s hup! Hup %s hup! Jeeeeeeee! *\o/*" % (nick, nick),
+            "Nog eventjes doorbijten! Dan haal je het en dan is het parrr-tayyy-tijd!",
             ]
-    phenny.say(random.choice(choices))
+    chosen = random.choice(choices)
+    while chosen in topicCache:
+        chosen = random.choice(choices)
+
+    if len(topicCache) >= 5:
+        topicCache.popleft()
+    topicCache.append(chosen)
+
+    phenny.say(chosen)
 
 def general_help(phenny):
     phenny.say("Je kan me om hulp vragen over de volgende onderwerpen met .help <onderwerp>")
@@ -30,7 +49,7 @@ def smileys_help(phenny):
     phenny.say("Dit zijn enkele vaak gebruikte smileys en hoe je ze maakt: ")
     phenny.say(":-) is : - )")
     phenny.say(":( is : (")
-    phenny.say("O_o en O.o are O _ o en O . o")
+    phenny.say("O_o en O.o zijn O _ o en O . o")
 
 def war_help(phenny):
     phenny.say("Ik zal je vertellen wanneer je moet starten en stoppen met schrijven als je mij een begin- en einduur geeft.")
