@@ -19,11 +19,6 @@ def adjust(phenny, arguments):
         insultCache.popleft()
 
     insultCache.append(chosen)
-    print chosen
-
-    print "------------------"
-    print arguments
-    print "------------------"
 
     phenny.say(chosen % arguments)
 
