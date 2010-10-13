@@ -51,7 +51,7 @@ def lart(phenny, input):
 
     if command == "lart":
         adjust(phenny, arguments, input.nick)
-    elif command == "addlart":
+    elif command == "addlart" and input.owner:
         addTool(phenny, arguments)
 
 def setup(self):

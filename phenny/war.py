@@ -144,11 +144,8 @@ def openUrl(url, urldata):
 
     return url
 
-def phennyfyxata(phenny, input): 
-    """
-    Time a word war
-    """
-
+def war(phenny, input): 
+    """ Met dit commando vraag je me om het start- en stopsein te geven voor een word war. """
     # Print statement to work around a bug when input.group(2) doesn't exist
     print "New command received"
     arguments = input.group(2)
@@ -220,8 +217,8 @@ def phennyfyxata(phenny, input):
 
     war.waitForWarEnd()
 
-phennyfyxata.commands = [_WAR_COMMAND, _SCORE_COMMAND]
-phennyfyxata.example = '.%s 1500 1515' % _WAR_COMMAND
+war.commands = [_WAR_COMMAND, _SCORE_COMMAND]
+war.example = '.%s 15:00 15:15' % _WAR_COMMAND
 
 if __name__ == '__main__': 
     print __doc__.strip()
