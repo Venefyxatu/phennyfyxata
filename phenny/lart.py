@@ -9,7 +9,12 @@ insultCache = deque()
 maxCacheSize = 5
 insultStore = "/RAID/sandbox/phenny/lartstore.txt"
 
-def adjust(phenny, arguments):
+def adjust(phenny, arguments, asker):
+    if not arguments:
+        arguments = asker
+
+    action = chr(1)+"ACTION "
+
     chosen = random.choice(insults)
 
     while chosen in insultCache:
@@ -20,7 +25,7 @@ def adjust(phenny, arguments):
 
     insultCache.append(chosen)
 
-    phenny.say(chosen % arguments)
+    phenny.say(action + chosen % arguments)
 
 def addTool(phenny, arguments):
     if not '##' in arguments:
@@ -45,7 +50,7 @@ def lart(phenny, input):
     command = input.group(1)
 
     if command == "lart":
-        adjust(phenny, arguments)
+        adjust(phenny, arguments, input.nick)
     elif command == "addlart":
         addTool(phenny, arguments)
 
