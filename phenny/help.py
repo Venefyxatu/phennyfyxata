@@ -6,7 +6,7 @@ import random
 from validation import _SCORE_COMMAND
 from collections import deque
 
-topics = ["war", "smileys", "nick", "motivation"]
+topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel"]
 
 topicCache = deque()
 
@@ -59,6 +59,17 @@ def war_help(phenny):
     phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon %s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
     phenny.say("Je kan de scores bekijken op http://phenny.venefyxatu.be")
 
+def voedsel_help(phenny):
+    phenny.say("Af en toe heb je voedsel nodig. Ik ben dan misschien maar een bot, maar geloof me toch maar.")
+    phenny.say("Echt voedsel wordt enkel in het echt geleverd... hier moet je het stellen met een digitale sandwich. Gebruik .food of .noms")
+
+def roulette_help(phenny):
+    phenny.say("Als je het helemaal niet meer ziet zitten kan je misschien een virtueel spelletje Russische roulette spelen...")
+    phenny.say("Je stopt een kogel in de revolver met .load")
+    phenny.say("Vervolgens draai je met .spin")
+    phenny.say("Als je het dan nog steeds niet ziet zitten haal je de trekker over met .pull")
+    phenny.say("DOE DIT NIET IN HET ECHT, want dan kan je eraan doodgaan!")
+
 def help(phenny, input): 
     """
     Show the help
@@ -75,6 +86,10 @@ def help(phenny, input):
         nick_help(phenny)
     elif arguments in ["motivation", "motivatie"]:
         motivation_help(phenny, input.nick)
+    elif arguments == "voedsel":
+        voedsel_help(phenny)
+    elif arguments == "roulette":
+        roulette_help(phenny)
     else:
         general_help(phenny)
 
