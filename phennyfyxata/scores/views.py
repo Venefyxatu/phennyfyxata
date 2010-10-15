@@ -41,9 +41,6 @@ def registerScore(request, nickname):
 def goToWars(request):
     return HttpResponseRedirect("/wars/")
 
-################################################################################
-################################################################################
-
 def writersOverview(request):
     getDict = {}
     logging.log(logging.CRITICAL, request.GET)
