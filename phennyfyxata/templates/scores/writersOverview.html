@@ -5,9 +5,17 @@
 {% block body %}
 
 <table>
-    <tr><th>Nickname</th><th>Total words written in wars</th><th>Total wars fought</th></tr>
-    {% for writer in writers %}
-        {% writer_row writer.nick %}
+    <tr>
+        {% for column in table.columns %}
+            <th><a href="?sort={{ column.name_toggled }}">{{ column }}</a></th>
+        {% endfor %}
+    </tr>
+    {% for row in table.rows %}
+        <tr>
+            {% for value in row %}
+                <td>{{ value|safe }}</td>
+            {% endfor %}
+        </tr>
     {% endfor %}
 </table>
 

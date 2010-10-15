@@ -2,6 +2,7 @@ from django import template
 from django.db.models import Avg
 from django.db.models import Max
 
+from phennyfyxata.scores.models import War
 from phennyfyxata.scores.models import Writer
 from phennyfyxata.scores.models import ParticipantScore
 
@@ -13,6 +14,7 @@ def get_winner_nick(war_id):
     if winningScore:
         return participantScores.get(score=winningScore).writer.nick
     return ''
+
 
 def format_writer_row(parser, token):
     try:
@@ -31,11 +33,13 @@ class WriterRowNode(template.Node):
         participantScores = ParticipantScore.objects.filter(writer__nick=writer_name)
         totalscore = reduce(lambda x, y: x + y, [ps.score for ps in participantScores], 0)
         totalwars = len(participantScores)
+        seconds_warred, time_warred = getTimeWarred(writer_name)
         return """<tr>
     <td><a href="/writers/%s/overview/">%s</a></td>
     <td>%s</td>
     <td>%s</td>
-</tr>""" % (writer_name, writer_name, totalscore, totalwars)
+    <td>%s</td>
+</tr>""" % (writer_name, writer_name, totalscore, totalwars, time_warred)
 
 def war_participants(parser, token):
     try:
@@ -145,6 +149,40 @@ class WarsForWriterNode(template.Node):
         participantWars = ParticipantScore.objects.filter(writer__nick=writer_name).order_by("war__id")
         return "".join(map(lambda x: '<tr><td><a href="/wars/%s/overview/">%s</a></td><td>%s</td><td>%s</td><td>%s</td>' % (x.war.id, x.war.id, x.war.timestamp.strftime("%Y-%m-%d %H:%M"), x.war.endtime.strftime("%Y-%m-%d %H:%M"), x.score), participantWars))
 
+def time_warred(parser, token):
+    try:
+        tag_name, writer_name = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires a single argument" % token.contents.split()[0]
+
+    return TimeWarredNode(writer_name)
+
+class TimeWarredNode(template.Node):
+    def __init__(self, writer_name):
+        self.writer_name = template.Variable(writer_name)
+
+    def render(self, context):
+        writer_name = self.writer_name.resolve(context)
+        timeWarred = getTimeWarred(writer_name)
+        return timeWarred
+
+def getTimeWarred(writer_name):
+        participantWars = War.objects.filter(participantscore__writer__nick=writer_name)
+        totalSeconds = 0
+        for war in participantWars:
+            duration = war.endtime - war.timestamp 
+            durationSeconds = duration.seconds + (duration.days * 86400)
+            totalSeconds += durationSeconds
+        secondsLeft = totalSeconds % 86400
+        days = totalSeconds / 86400
+        hours = secondsLeft / 3600
+        secondsLeft = secondsLeft % 3600
+        minutes = secondsLeft / 60
+        daysText = days == 1 and 'day' or 'days'
+        hoursText = hours == 1 and 'hour' or 'hours'
+        minutesText = minutes == 1 and 'minute' or 'minutes'
+        return totalSeconds, "%(days)s %(daysText)s, %(hours)s %(hoursText)s and %(minutes)s %(minutesText)s" % locals()
+
 register.tag("writer_row", format_writer_row)
 register.tag("war_participants", war_participants)
 register.tag("warcount", war_count)
@@ -152,3 +190,8 @@ register.tag("averagescore", average_score)
 register.tag("warswon", wars_won)
 register.tag("war_participant_details", war_participant_details)
 register.tag("wars_for_writer", wars_for_writer)
+register.tag("timewarred", time_warred)
+
+
+
+

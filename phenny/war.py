@@ -41,7 +41,7 @@ class War:
             return
 
 
-        djangoUrl = "http://127.0.0.1/wars/new/"
+        djangoUrl = "http://phenny.venefyxatu.be/wars/new/"
 
         urldata = {
                 "starttime": self._startEpoch,
@@ -123,13 +123,15 @@ def lock(lockName):
 def registerScore(phenny, arguments, user):
     print "Registering score %s for %s" % (arguments, user)
 
-    djangoUrl = "http://127.0.0.1/writers/%s/registerscore/" % user
+    djangoUrl = "http://phenny.venefyxatu.be/writers/%s/registerscore/" % user
     urldata = {"score": arguments[1], "war": arguments[0]}
 
     try:
 
         openUrl(djangoUrl, urldata)
-    except urllib2.HTTPError:
+    except urllib2.HTTPError, e:
+        print e
+
         phenny.say("The records show that war %s doesn't exist. I don't lose documents, so you must've gotten the ID wrong :-)" % arguments[0])
         return
 

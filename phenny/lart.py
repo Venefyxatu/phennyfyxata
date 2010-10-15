@@ -10,7 +10,7 @@ maxCacheSize = 5
 insultStore = "/RAID/sandbox/phenny/lartstore.txt"
 
 def adjust(phenny, arguments, asker):
-    if not arguments:
+    if not arguments or arguments.lower() in ["phenny", "phennyfyxata"]:
         arguments = asker
 
     action = chr(1)+"ACTION "
