@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
 {% load scores_extras %}
+{% load i18n %}
 
 {% block body %}
 
 <table>
-    <tr><th>War ID</th><th>Timestamp</th><th>Participants</th></tr>
+    <tr><th>War ID</th><th>{% trans "Timestamp" %}</th><th>{% trans "Participants" %}</th></tr>
     {% for war in wars %}
     <tr><td><a href="/wars/{{ war.id }}/overview/">{{ war.id }}</a></td><td>{{ war.timestamp|date:"l, M d Y, H:i" }} - {{ war.endtime|date:"H:i" }}</td><td>{% war_participants war.id %}</td></tr>
     {% endfor %}

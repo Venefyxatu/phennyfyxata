@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+
+{% load i18n %}
+{% get_available_languages as LANGUAGES %}
+
 <html>
     <head>
         <title>Phennyfyxata</title>
@@ -10,8 +14,8 @@
     <body>
         <div class="menu">
             <span class="menuitem"><a class="menu" href="/wars/">Wars</a></span>
-            <span class="menuitem"><a class="menu" href="/writers/">Writers overview</a></span>
-            <span class="menuitem-right"><a class="menu" href="/documentation/">Documentation</a></span>
+            <span class="menuitem"><a class="menu" href="/writers/">{% trans "Writers overview" %}</a></span>
+            <span class="menuitem-right"><a class="menu" href="/documentation/">{% trans "Documentation" %}</a></span>
         </div>
         <p />
         <div class="info">
@@ -23,5 +27,17 @@
                 In case of issues, please contact me via <a href="http://blog.venefyxatu.be/contact">this form</a> or ping venefyxatu in #dutchnano on <a target="_blank" href="http://www.freenode.net">Freenode</a>
             </div>
         </div>
+
+
+        <form action="/i18n/setlang/" method="post">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="/wars/" />
+            <select name="language">
+                {% for lang in LANGUAGES %}
+                <option value="{{ lang.0 }}">{{ lang.1 }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Go" />
+        </form>
     </body>
 </html>

@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import ugettext as _
 
 from templatetags.scores_extras import getTimeWarred
 
@@ -52,10 +53,10 @@ def writersOverview(request):
         getDict['sort'] = '-seconds_warred'
 
     class WriterTable(tables.Table):
-        writer_name = tables.Column(name='writer_name', verbose_name="Writer nick")
-        total_score = tables.Column(name='total_score', verbose_name="Total wordcount in wars")
-        total_wars = tables.Column(name='total_wars', verbose_name="Wars participated in")
-        time_warred = tables.Column(name='time_warred', verbose_name="Time spent in wars")
+        writer_name = tables.Column(name='writer_name', verbose_name=_("Writer nick"))
+        total_score = tables.Column(name='total_score', verbose_name=_("Total wordcount in wars"))
+        total_wars = tables.Column(name='total_wars', verbose_name=_("Wars participated in"))
+        time_warred = tables.Column(name='time_warred', verbose_name=_("Time spent in wars"))
         seconds_warred = tables.Column(name='seconds_warred', visible=False, sortable=True)
 
     allwriters = []

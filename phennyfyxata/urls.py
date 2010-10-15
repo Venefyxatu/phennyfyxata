@@ -6,6 +6,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
     (r'', include('phennyfyxata.scores.urls')),
+    (r'^i18n/', include('django.conf.urls.i18n')),
     # Example:
     # (r'^phennyfyxata/', include('phennyfyxata.foo.urls')),
 
