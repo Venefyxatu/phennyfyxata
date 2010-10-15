@@ -163,7 +163,7 @@ class TimeWarredNode(template.Node):
 
     def render(self, context):
         writer_name = self.writer_name.resolve(context)
-        timeWarred = getTimeWarred(writer_name)
+        secondsWarred, timeWarred = getTimeWarred(writer_name)
         return timeWarred
 
 def getTimeWarred(writer_name):
