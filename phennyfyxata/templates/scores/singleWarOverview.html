@@ -1,18 +1,21 @@
 {% extends 'base.html' %}
 
+{% load i18n %}
 {% load scores_extras %}
 
 {% block body %}
 
 <b>War ID:</b> {{ war.id }}<br />
-<b>Starttime:</b> {{ war.timestamp|date:"l, M d Y, H:i" }}<br />
-<b>Endtime:</b> {{ war.endtime|date:"l, M d Y, H:i" }}<br />
-<b>Participants:</b>
+<b>{% trans "Starttime" %}:</b> {{ war.timestamp|date:"l, M d Y, H:i" }}<br />
+<b>{% trans "Endtime" %}:</b> {{ war.endtime|date:"l, M d Y, H:i" }}<br />
+<b>{% trans "Participants" %}:</b>
+
+<p />
 
 <table>
     <tr>
-        <th>Nickname</th>
-        <th>Score</th>
+        <th>{% trans "Nickname" %}</th>
+        <th>{% trans "Score" %}</th>
         {% war_participant_details war.id %}
     </tr>
 </table>

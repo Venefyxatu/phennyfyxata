@@ -121,3 +121,6 @@ def createWar(request):
         html = str(war.id)
         return HttpResponse(html)
     raise Http404
+
+def language(request):
+    return render_to_response('scores/language.html')

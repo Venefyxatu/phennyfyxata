@@ -1,6 +1,7 @@
 from django import template
 from django.db.models import Avg
 from django.db.models import Max
+from django.utils.translation import ungettext
 
 from phennyfyxata.scores.models import War
 from phennyfyxata.scores.models import Writer
@@ -181,7 +182,11 @@ def getTimeWarred(writer_name):
         daysText = days == 1 and 'day' or 'days'
         hoursText = hours == 1 and 'hour' or 'hours'
         minutesText = minutes == 1 and 'minute' or 'minutes'
-        return totalSeconds, "%(days)s %(daysText)s, %(hours)s %(hoursText)s and %(minutes)s %(minutesText)s" % locals()
+        daysText = ungettext("%(days)s day", "%(days)s days", days) % locals()
+        hoursText = ungettext("%(hours)s hour", "%(hours)s hours", hours) % locals()
+        minutesText = ungettext("%(minutes)s minute", "%(minutes)s minutes", minutes) % locals()
+        return totalSeconds, "%(daysText)s, %(hoursText)s, %(minutesText)s" % locals()
+        #return totalSeconds, "%(days)s %(daysText)s, %(hours)s %(hoursText)s and %(minutes)s %(minutesText)s" % locals()
 
 register.tag("writer_row", format_writer_row)
 register.tag("war_participants", war_participants)

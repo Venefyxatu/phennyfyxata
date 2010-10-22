@@ -1,18 +1,21 @@
 {% extends 'base.html' %}
 
+{% load i18n %}
 {% load scores_extras %}
 
 {% block body %}
 
-<b>Nickname:</b> {{ writer.nick }}<br />
-<b>Wars joined:</b> {% warcount writer.nick %}<br />
-<b>Average score per war:</b> {% averagescore writer.nick %}<br />
-<b>Wars won:</b> {% warswon writer.nick %}<br />
-<b>Time spent in wars:</b> {% timewarred writer.nick %}<br />
+<b>{% trans "Nickname" %}:</b> {{ writer.nick }}<br />
+<b>{% trans "Wars joined" %}:</b> {% warcount writer.nick %}<br />
+<b>{% trans "Average score per war" %}:</b> {% averagescore writer.nick %}<br />
+<b>{% trans "Wars won" %}:</b> {% warswon writer.nick %}<br />
+<b>{% trans "Time spent in wars" %}:</b> {% timewarred writer.nick %}<br />
+
+<p />
 
 <table>
     <tr>
-        <th>War ID</th><th>Starttime</th><th>Endtime</th><th>Score</th>
+        <th>War ID</th><th>{% trans "Starttime" %}</th><th>{% trans "Endtime" %}</th><th>{% trans "Score" %}</th>
     </tr>
     {% wars_for_writer writer.nick %}
 </table>

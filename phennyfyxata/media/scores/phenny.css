@@ -57,10 +57,12 @@ table {
     margin-right: auto;
     border-style: solid;
     border-width: 1px;
+    border-collapse: collapse;
 }
 
 th {
     color: #666;
+    background: #CCC;
     padding: 5px;
     border-style: solid;
     border-width: 1px;
@@ -100,6 +102,9 @@ div.langmenu {
     font-size: 9px;
 }
 
+select.langselect {
+}
+
 body {
     background-color: #e2eff3;
     font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -122,4 +127,12 @@ body {
 
 h1 {
     text-align: center;
+}
+
+input {
+    border: solid 1px;
+}
+
+select {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
 }

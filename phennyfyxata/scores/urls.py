@@ -10,4 +10,5 @@ urlpatterns = patterns('phennyfyxata.scores.views',
         url('^wars/new/$', 'createWar'),
         url('^documentation/$', 'documentation'),
         url('^documentation/nl/$', 'documentationDutch'),
+        url('^language/$', 'language'),
     )

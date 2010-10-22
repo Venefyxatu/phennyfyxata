@@ -113,7 +113,7 @@ def showHelp(phenny):
     phenny.say("Zorg ervoor dat je het 24-uren formaat gebruikt, want anders raak ik in de war.")
     phenny.say("bv. als je een war wil tussen 15:00 en 15:15, dan zeg je .war 15:00 15:15")
     phenny.say("Als ik gewoon het stopsignaal moet geven gebruik je het woordje 'busy' in plaats van een starttijd")
-    phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon %s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
+    phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon .%s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
     phenny.say("Je kan de scores bekijken op http://phenny.venefyxatu.be")
 
 def lock(lockName):
