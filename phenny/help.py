@@ -27,6 +27,8 @@ def motivation_help(phenny, nick):
             "Komkom, nog een klein beetje. *aait %s over het hoofd*" % nick,
             "Hup %s hup! Hup %s hup! Jeeeeeeee! *\o/*" % (nick, nick),
             "Nog eventjes doorbijten! Dan haal je het en dan is het parrr-tayyy-tijd!",
+            "Niet miepen maar tiepen!",
+            "Minder miepen, meer tiepen!",
             ]
     chosen = random.choice(choices)
     while chosen in topicCache:
