@@ -82,7 +82,9 @@ def writersOverview(request):
     for row in writertable.rows.page():
         pass
 
-    return render_to_response('scores/writersOverview.html', {'table':writertable, 'page':writertable.page})
+    sort = request.GET.get('sort', 'writer_name')
+
+    return render_to_response('scores/writersOverview.html', {'table':writertable, 'sort':sort})
 
 def singleWriterOverview(request, nickname):
     try:
