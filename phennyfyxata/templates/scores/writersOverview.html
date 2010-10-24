@@ -1,8 +1,28 @@
 {% extends 'base.html' %}
 
 {% load scores_extras %}
+{% load i18n %}
 
 {% block body %}
+
+<div class="pageinfo">
+    {% if table.paginator.num_pages > 1 %}
+        {% if page.number != 1 %}
+            <a href="?page=1">{% trans "First page" %}</a> |
+        {% endif %}
+        {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}">{% trans "Previous" %}</a> |
+        {% endif %}
+        {% trans "Page" %} {{ page.number }} {% trans "of" %} {{ table.paginator.num_pages }}
+        {% if page.has_next %}
+            | <a href="?page={{ page.next_page_number }}">{% trans "Next" %}</a>
+        {% endif %}
+        {% if page.number != table.paginator.num_pages %}
+            | <a href="?page={{ table.paginator.num_pages }}">{% trans "Last page" %}</a>
+        {% endif %}
+    {% endif %}
+</div>
+<div class="smallfiller"></div>
 
 <table>
     <tr>
@@ -10,7 +30,7 @@
             <th><a href="?sort={{ column.name_toggled }}">{{ column }}</a></th>
         {% endfor %}
     </tr>
-    {% for row in table.rows %}
+    {% for row in page.object_list %}
         <tr>
             {% for value in row %}
                 <td>{{ value|safe }}</td>

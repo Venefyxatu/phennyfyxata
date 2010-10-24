@@ -125,6 +125,12 @@ body {
     height: 100px;
 }
 
+.smallfiller {
+    position: relative;
+    width: 760px;
+    height: 20px;
+}
+
 h1 {
     text-align: center;
 }
@@ -135,4 +141,11 @@ input {
 
 select {
     font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+.pagemenu {
+}
+
+.pageinfo {
+    text-align: center;
 }

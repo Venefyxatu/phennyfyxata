@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from templatetags.scores_extras import getTimeWarred
 
@@ -44,7 +45,6 @@ def goToWars(request):
 
 def writersOverview(request):
     getDict = {}
-    logging.log(logging.CRITICAL, request.GET)
     for key, value in request.GET.items():
         getDict[key] = value
     if getDict.get('sort') == 'time_warred':
@@ -72,16 +72,17 @@ def writersOverview(request):
 
     writertable = WriterTable(allwriters, order_by=getDict.get('sort', 'writer_name'))
 
-    #if getDict.get('sort') == 'time_warred':
-    #    writertable.time_warred.direction('asc')
-    #    writertable.seconds_warred.direction('desc')
-    #elif getDict.get('sort') == '-time_warred':
-    #    writertable.time_warred.direction('desc')
-    #    writertable.seconds_warred.direction('asc')
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
 
-    return render_to_response('scores/writersOverview.html', {'table':writertable})
-#    writers = Writer.objects.all().order_by("nick")
-#    return render_to_response('scores/writersOverview.html', {'writers': writers})
+    writertable.paginate(Paginator, 20, page=page, orphans=0)
+
+    for row in writertable.rows.page():
+        pass
+
+    return render_to_response('scores/writersOverview.html', {'table':writertable, 'page':writertable.page})
 
 def singleWriterOverview(request, nickname):
     try:
