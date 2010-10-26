@@ -186,7 +186,6 @@ def getTimeWarred(writer_name):
         hoursText = ungettext("%(hours)s hour", "%(hours)s hours", hours) % locals()
         minutesText = ungettext("%(minutes)s minute", "%(minutes)s minutes", minutes) % locals()
         return totalSeconds, "%(daysText)s, %(hoursText)s, %(minutesText)s" % locals()
-        #return totalSeconds, "%(days)s %(daysText)s, %(hours)s %(hoursText)s and %(minutes)s %(minutesText)s" % locals()
 
 register.tag("writer_row", format_writer_row)
 register.tag("war_participants", war_participants)
@@ -196,7 +195,3 @@ register.tag("warswon", wars_won)
 register.tag("war_participant_details", war_participant_details)
 register.tag("wars_for_writer", wars_for_writer)
 register.tag("timewarred", time_warred)
-
-
-
-
