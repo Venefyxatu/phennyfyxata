@@ -149,7 +149,7 @@ def openUrl(url, urldata):
 def war(phenny, input): 
     """ Met dit commando vraag je me om het start- en stopsein te geven voor een word war. """
     # Print statement to work around a bug when input.group(2) doesn't exist
-    print "New command received"
+    print "%s New command received in war module" % time.localtime()
     arguments = input.group(2)
     command = input.group(1)
 

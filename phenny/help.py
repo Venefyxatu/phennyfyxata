@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import time
 import random
 
 from validation import _SCORE_COMMAND
@@ -76,7 +77,7 @@ def help(phenny, input):
     """
     Show the help
     """
-    print "New command received in help module"
+    print "%s New command received in help module" % time.localtime()
     arguments = input.group(2)
     command = input.group(1)
 

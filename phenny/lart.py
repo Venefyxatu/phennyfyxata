@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import time
 import random
 from collections import deque
 
@@ -45,7 +46,7 @@ def lart(phenny, input):
     """
     Insult a user
     """
-    print "New command received in lart module"
+    print "%s New command received in lart module" % time.localtime()
     arguments = input.group(2)
     command = input.group(1)
 
