@@ -108,7 +108,7 @@ def warsOverview(request):
         wartime = '%s - %s' % (war.timestamp, war.endtime)
         participantlist = get_participant_list(war.id)
 
-        allwars.append({"war_id":war.id, "timestamp":wartime, "participants":participantlist})
+        allwars.append({"war_id":war_link, "timestamp":wartime, "participants":participantlist})
 
     wartable = WarTable(allwars, order_by=request.GET.get('sort', 'war_id'))
 
