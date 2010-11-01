@@ -2,3 +2,8 @@
 *.jpg
 *.swp
 settings.py
+*.pyc
+*.log
+*.json
+*.db
+locale

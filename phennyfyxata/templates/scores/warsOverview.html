@@ -5,11 +5,40 @@
 
 {% block body %}
 
+<div class="pageinfo">
+    {% if table.paginator.num_pages > 1 %}
+        {% if table.page.number != 1 %}
+            <a href="?page=1&sort={{ sort }}">{% trans "First page" %}</a> |
+        {% endif %}
+        {% if table.page.has_previous %}
+            <a href="?page={{ table.page.previous_page_number }}&sort={{ sort }}">{% trans "Previous" %}</a> |
+        {% endif %}
+        {% trans "Page" %} {{ table.page.number }} {% trans "of" %} {{ table.paginator.num_pages }}
+        {% if table.page.has_next %}
+            | <a href="?page={{ table.page.next_page_number }}&sort={{ sort }}">{% trans "Next" %}</a>
+        {% endif %}
+        {% if table.page.number != table.paginator.num_pages %}
+            | <a href="?page={{ table.paginator.num_pages }}&sort={{ sort }}">{% trans "Last page" %}</a>
+        {% endif %}
+    {% endif %}
+</div>
+<div class="smallfiller"></div>
+
+
 <table>
-    <tr><th>War ID</th><th>{% trans "Timestamp" %}</th><th>{% trans "Participants" %}</th></tr>
-    {% for war in wars %}
-    <tr><td><a href="/wars/{{ war.id }}/overview/">{{ war.id }}</a></td><td>{{ war.timestamp|date:"l, M d Y, H:i" }} - {{ war.endtime|date:"H:i" }}</td><td><div class="toowide">{% war_participants war.id %}</div></td></tr>
+    <tr>
+        {% for column in table.columns %}
+            <th><a href="?sort={{ column.name_toggled }}">{{ column }}</a></th>
+        {% endfor %}
+    </tr>
+    {% for row in table.page.object_list %}
+        <tr>
+            {% for value in row %}
+                <td>{{ value|safe }}</td>
+            {% endfor %}
+        </tr>
     {% endfor %}
+
 </table>
 
 {% endblock %}

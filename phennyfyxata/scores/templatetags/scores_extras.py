@@ -16,6 +16,12 @@ def get_winner_nick(war_id):
         return participantScores.get(score=winningScore).writer.nick
     return ''
 
+def get_participant_list(war_id):
+        participantScores = ParticipantScore.objects.filter(war__id=war_id)
+        winner = get_winner_nick(war_id)
+        writers = map(lambda x: x.writer.nick, participantScores)
+        writers = map(lambda x: winner == x and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
+        return ", ".join(writers)
 
 def format_writer_row(parser, token):
     try:
@@ -34,7 +40,7 @@ class WriterRowNode(template.Node):
         participantScores = ParticipantScore.objects.filter(writer__nick=writer_name)
         totalscore = reduce(lambda x, y: x + y, [ps.score for ps in participantScores], 0)
         totalwars = len(participantScores)
-        seconds_warred, time_warred = getTimeWarred(writer_name)
+        seconds_warred, time_warred = get_time_warred(writer_name)
         return """<tr>
     <td><a href="/writers/%s/overview/">%s</a></td>
     <td>%s</td>
@@ -56,11 +62,7 @@ class WarParticipantsNode(template.Node):
 
     def render(self, context):
         war_id = self.war_id.resolve(context)
-        participantScores = ParticipantScore.objects.filter(war__id=war_id)
-        winner = get_winner_nick(war_id)
-        writers = map(lambda x: x.writer.nick, participantScores)
-        writers = map(lambda x: winner == x and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
-        return ", ".join(writers)
+        get_participant_list(war_id)
 
 def war_count(parser, token):
     try:
@@ -164,10 +166,10 @@ class TimeWarredNode(template.Node):
 
     def render(self, context):
         writer_name = self.writer_name.resolve(context)
-        secondsWarred, timeWarred = getTimeWarred(writer_name)
+        secondsWarred, timeWarred = get_time_warred(writer_name)
         return timeWarred
 
-def getTimeWarred(writer_name):
+def get_time_warred(writer_name):
         participantWars = War.objects.filter(participantscore__writer__nick=writer_name)
         totalSeconds = 0
         for war in participantWars:

@@ -9,7 +9,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
-from templatetags.scores_extras import getTimeWarred
+from templatetags.scores_extras import get_time_warred
+from templatetags.scores_extras import get_winner_nick
+from templatetags.scores_extras import get_participant_list
 
 from phennyfyxata.scores.models import War
 from phennyfyxata.scores.models import Writer
@@ -66,7 +68,7 @@ def writersOverview(request):
         participantScores = ParticipantScore.objects.filter(writer__nick=writer_name)
         totalscore = reduce(lambda x, y: x + y, [ps.score for ps in participantScores], 0)
         totalwars = len(participantScores)
-        seconds_warred, time_warred = getTimeWarred(writer_name)
+        seconds_warred, time_warred = get_time_warred(writer_name)
 
         allwriters.append({"writer_name":writer_link, "total_score":totalscore, "total_wars":totalwars, "time_warred":time_warred, "seconds_warred":seconds_warred})
 
@@ -94,8 +96,35 @@ def singleWriterOverview(request, nickname):
     return render_to_response('scores/singleWriterOverview.html', {'writer': writer})
 
 def warsOverview(request):
-    wars = War.objects.all()
-    return render_to_response('scores/warsOverview.html', {'wars': wars})
+
+    class WarTable(tables.Table):
+        war_id = tables.Column(name='war_id', verbose_name=_("War ID"), sortable=False)
+        timestamp = tables.Column(name='timestamp', verbose_name=_("Timestamp"), sortable=False)
+        participants = tables.Column(name='participants', verbose_name=_("Participants"), sortable=False)
+
+    allwars = []
+    for war in War.objects.all():
+        war_link = '<a href="/wars/%s/overview/">%s</a>' % (war.id, war.id)
+        wartime = '%s - %s' % (war.timestamp, war.endtime)
+        participantlist = get_participant_list(war.id)
+
+        allwars.append({"war_id":war.id, "timestamp":wartime, "participants":participantlist})
+
+    wartable = WarTable(allwars, order_by=request.GET.get('sort', 'war_id'))
+
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
+    wartable.paginate(Paginator, 20, page=page, orphans=0)
+
+    for row in wartable.rows.page():
+        pass
+
+    sort = request.GET.get('sort', 'war_id')
+
+    return render_to_response('scores/warsOverview.html', {'table': wartable, 'sort':sort})
 
 def documentation(request):
     return render_to_response('scores/documentation.html')
