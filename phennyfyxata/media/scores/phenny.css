@@ -149,3 +149,7 @@ select {
 .pageinfo {
     text-align: center;
 }
+
+.toowide {
+    width: 300px;
+}

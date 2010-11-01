@@ -8,7 +8,7 @@
 <table>
     <tr><th>War ID</th><th>{% trans "Timestamp" %}</th><th>{% trans "Participants" %}</th></tr>
     {% for war in wars %}
-    <tr><td><a href="/wars/{{ war.id }}/overview/">{{ war.id }}</a></td><td>{{ war.timestamp|date:"l, M d Y, H:i" }} - {{ war.endtime|date:"H:i" }}</td><td>{% war_participants war.id %}</td></tr>
+    <tr><td><a href="/wars/{{ war.id }}/overview/">{{ war.id }}</a></td><td>{{ war.timestamp|date:"l, M d Y, H:i" }} - {{ war.endtime|date:"H:i" }}</td><td><div class="toowide">{% war_participants war.id %}</div></td></tr>
     {% endfor %}
 </table>
 

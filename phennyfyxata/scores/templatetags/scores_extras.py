@@ -60,7 +60,7 @@ class WarParticipantsNode(template.Node):
         winner = get_winner_nick(war_id)
         writers = map(lambda x: x.writer.nick, participantScores)
         writers = map(lambda x: winner == x and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
-        return ",".join(writers)
+        return ", ".join(writers)
 
 def war_count(parser, token):
     try:
