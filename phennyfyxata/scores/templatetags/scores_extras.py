@@ -21,7 +21,8 @@ def get_participant_list(war_id):
         winner = get_winner_nick(war_id)
         writers = map(lambda x: x.writer.nick, participantScores)
         writers = map(lambda x: winner == x and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
-        return ", ".join(writers)
+        participants_list = ", ".join(writers)
+        return '<div class="toowide">%s</div>' % participants_list
 
 def format_writer_row(parser, token):
     try:
