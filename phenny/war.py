@@ -71,9 +71,9 @@ class War:
             self._phenny.say('1')
             time.sleep(1)
 
-            self._phenny.say("It is %s according to my clock. Good luck!" % formatepoch(self._startEpoch))
+            self._phenny.say("Het is %s volgens mijn uurwerk. Veel succes!" % formatepoch(self._startEpoch))
             self._phenny.say("----------GO----------")
-        self._phenny.say("War %s started" % self.id)
+        self._phenny.say("War %s is begonnen" % self.id)
 
     def waitForWarEnd(self):
         epochlock = os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch))
@@ -81,18 +81,18 @@ class War:
             os.remove(epochlock)
             time.sleep(self._endEpoch - time.time())
             self._phenny.say("---------STOP---------")
-        self._phenny.say("War %s has ended (%s - %s). Feel free to register your score with .score %s <score>" % (self.id, formatepoch(self._startEpoch), formatepoch(self._endEpoch), self.id))
-        self._phenny.say("Statistics can be found on http://phenny.venefyxatu.be/wars/%s/overview/" % self.id)
+        self._phenny.say("War %s is voorbij (%s - %s). Je kan je score registereren met .score %s <score>" % (self.id, formatepoch(self._startEpoch), formatepoch(self._endEpoch), self.id))
+        self._phenny.say("Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/%s/overview/" % self.id)
 
     def endWar(self):
         f = open(os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch)), 'w')
         f.close()
 
         if self._endEpoch < time.time():
-            self._phenny.say("This war is already over. You're too late.")
+            self._phenny.say("Deze war is al voorbij. Je bent te laat :(")
             return
 
-        self._phenny.say("I'll give the stop signal at %s." % formatepoch(self._endEpoch))
+        self._phenny.say("Ik zal het stopsein geven om %s." % formatepoch(self._endEpoch))
 
         self.waitForWarEnd()
 
@@ -133,10 +133,10 @@ def registerScore(phenny, arguments, user):
     except urllib2.HTTPError, e:
         print e
 
-        phenny.say("The records show that war %s doesn't exist. I don't lose documents, so you must've gotten the ID wrong :-)" % arguments[0])
+        phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % arguments[0])
         return
 
-    phenny.say("Score %s registered for %s." % (arguments[1], user))
+    phenny.say("Score %s geregistreerd voor %s." % (arguments[1], user))
 
 def openUrl(url, urldata):
     opener = urllib2.build_opener(urllib2.HTTPHandler)
@@ -202,17 +202,17 @@ def war(phenny, input):
     endepoch, nextDay = convertToEpoch(splitArguments[1], nextDay)
 
     if startepoch > endepoch:
-        phenny.say("I don't know about you, but I can't travel back in time to end a war before it begins. Ask venefyxatu to equip me with a flux capacitor if you really want that to happen.")
+        phenny.say("Ik weet niet hoe het met jou zit, maar ik kan niet terugreizen in de tijd om een war te eindigen voordat die begint. Vraag venefyxatu om me een flux capacitor, of nog beter, een vliegende DeLorean, te kopen als je dat *echt* wil.")
         return
 
     lock(lockName="start_%s" % str(startepoch))
     lock(lockName="stop_%s" % str(endepoch))
 
     if startepoch < time.time():
-        phenny.say("Start time is in the past - if you just want me to end the war, say .war busy <endtime> or .war <endtime> busy")
+        phenny.say("Die starttijd ligt in het verleden - als ik gewoon de war moet stoppen zeg je .war busy <endtime>")
         return
 
-    phenny.say("I'll give the go signal at %s and the stop signal at %s." % (formatepoch(startepoch), formatepoch(endepoch)))
+    phenny.say("Ik zal het startsein geven om %s en het stopsein om %s." % (formatepoch(startepoch), formatepoch(endepoch)))
     
 
     war = War(phenny, startepoch, endepoch)
