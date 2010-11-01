@@ -82,6 +82,7 @@ class War:
             time.sleep(self._endEpoch - time.time())
             self._phenny.say("---------STOP---------")
         self._phenny.say("War %s has ended (%s - %s). Feel free to register your score with .score %s <score>" % (self.id, formatepoch(self._startEpoch), formatepoch(self._endEpoch), self.id))
+        self._phenny.say("Statistics can be found on http://phenny.venefyxatu.be/wars/%s/overview/" % self.id)
 
     def endWar(self):
         f = open(os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch)), 'w')
