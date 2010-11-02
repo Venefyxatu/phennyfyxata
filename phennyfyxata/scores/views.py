@@ -98,7 +98,7 @@ def singleWriterOverview(request, nickname):
 def warsOverview(request):
 
     class WarTable(tables.Table):
-        war_id = tables.Column(name='war_id', verbose_name=_("War ID"), sortable=True)
+        war_id = tables.Column(name='war_id', verbose_name=_("War ID"), sortable=False)
         timestamp = tables.Column(name='timestamp', verbose_name=_("Timestamp"), sortable=False)
         participants = tables.Column(name='participants', verbose_name=_("Participants"), sortable=False)
 
@@ -110,7 +110,7 @@ def warsOverview(request):
 
         allwars.append({"war_id":war_link, "timestamp":wartime, "participants":participantlist})
 
-    wartable = WarTable(allwars, order_by=request.GET.get('sort', '-war_id'))
+    wartable = WarTable(allwars, order_by=request.GET.get('sort', 'war_id'))
 
     try:
         page = int(request.GET.get('page', '1'))
