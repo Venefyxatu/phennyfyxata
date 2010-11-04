@@ -92,6 +92,7 @@ class War:
             self._phenny.say("Deze war is al voorbij. Je bent te laat :(")
             return
 
+        self._phenny.say("Dit wordt war %s" % self.id)
         self._phenny.say("Ik zal het stopsein geven om %s." % formatepoch(self._endEpoch))
 
         self.waitForWarEnd()
