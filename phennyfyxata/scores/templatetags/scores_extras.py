@@ -13,14 +13,14 @@ def get_winner_nick(war_id):
     participantScores = ParticipantScore.objects.filter(war__id=war_id)
     winningScore = participantScores.aggregate(Max('score'))['score__max']
     if winningScore:
-        return participantScores.get(score=winningScore).writer.nick
+        return [ps.writer.nick for ps in participantScores.filter(score=winningScore)]
     return ''
 
 def get_participant_list(war_id):
         participantScores = ParticipantScore.objects.filter(war__id=war_id)
-        winner = get_winner_nick(war_id)
+        winners = get_winner_nick(war_id)
         writers = map(lambda x: x.writer.nick, participantScores)
-        writers = map(lambda x: winner == x and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
+        writers = map(lambda x: x in winners and '<b><a href="/writers/%s/overview/">%s</a></b>' % (x, x) or '<a href="/writers/%s/overview/">%s</a>' % (x, x), writers)
         participants_list = ", ".join(writers)
         return '<div class="toowide">%s</div>' % participants_list
 
@@ -114,8 +114,8 @@ class WarswonNode(template.Node):
         participantWars = ParticipantScore.objects.filter(writer__nick=writer_name)
         warsWon = 0
         for war in participantWars:
-            winner_nick = get_winner_nick(war.war.id)
-            if winner_nick == writer_name:
+            winner_nicks = get_winner_nick(war.war.id)
+            if writer_name in winner_nicks:
                 warsWon += 1
         return warsWon
 
