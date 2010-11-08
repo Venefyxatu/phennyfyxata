@@ -74,7 +74,7 @@ class War:
 
             self._phenny.say("Het is %s volgens mijn uurwerk. Veel succes!" % formatepoch(self._startEpoch))
             self._phenny.say("----------START----------")
-        self._phenny.say("War %s (tot %s, %s minuten dus) is begonnen" % (self.id, formatepoch(self._startEpoch), duration(self._startEpoch, self._endEpoch)))
+        self._phenny.say("War %s (tot %s, %s minuten dus) is begonnen" % (self.id, formatepoch(self._endEpoch), duration(self._startEpoch, self._endEpoch)))
 
     def waitForWarEnd(self):
         epochlock = os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch))
