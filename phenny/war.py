@@ -22,6 +22,7 @@ padzeroes = lambda x: (4 - len(str(x))) * '0'
 splittime = lambda t: (int(t[0:2]), int(t[2:4]))
 formatepoch = lambda x: time.strftime(_TIME_FORMAT, time.localtime(x))
 applicabletime = lambda x: x != 'busy'
+duration = lambda x, y: int((y - x) / 60)
 
 class War:
     def __init__(self, phenny, startEpoch=None, endEpoch=time.time()+10):
@@ -72,8 +73,8 @@ class War:
             time.sleep(1)
 
             self._phenny.say("Het is %s volgens mijn uurwerk. Veel succes!" % formatepoch(self._startEpoch))
-            self._phenny.say("----------GO----------")
-        self._phenny.say("War %s is begonnen" % self.id)
+            self._phenny.say("----------START----------")
+        self._phenny.say("War %s (tot %s, %s minuten dus) is begonnen" % (self.id, formatepoch(self._startEpoch), duration(self._startEpoch, self._endEpoch)))
 
     def waitForWarEnd(self):
         epochlock = os.path.join(_LOCKPATH, "stop_%s" % str(self._endEpoch))
