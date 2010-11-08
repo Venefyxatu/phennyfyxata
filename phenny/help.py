@@ -7,7 +7,7 @@ import random
 from validation import _SCORE_COMMAND
 from collections import deque
 
-topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel"]
+topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel", "plannedwars"]
 
 topicCache = deque()
 
@@ -73,6 +73,9 @@ def roulette_help(phenny):
     phenny.say("Als je het dan nog steeds niet ziet zitten haal je de trekker over met .pull")
     phenny.say("DOE DIT NIET IN HET ECHT, want dan kan je eraan doodgaan!")
 
+def plannedwars_help(phenny):
+    phenny.say("Je kan een overzicht krijgen van welke wars gepland zijn met het commando .plannedwars")
+
 def help(phenny, input): 
     """
     Show the help
@@ -93,6 +96,8 @@ def help(phenny, input):
         voedsel_help(phenny)
     elif arguments == "roulette":
         roulette_help(phenny)
+    elif arguments == "plannedwars":
+        plannedwars_help(phenny)
     else:
         general_help(phenny)
 
