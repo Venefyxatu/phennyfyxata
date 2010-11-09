@@ -8,6 +8,8 @@ class War(models.Model):
     timestamp = models.DateTimeField()
     endtime = models.DateTimeField()
     finished = models.BooleanField(default=False)
+    def __unicode__(self):
+        return "War %s: %s tot %s (%s minuten)" % (self.id, self.timestamp.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - self.timestamp).seconds / 60)
 
 class ParticipantScore(models.Model):
     writer = models.ForeignKey(Writer)

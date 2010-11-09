@@ -159,10 +159,13 @@ def language(request):
     return render_to_response('scores/language.html')
 
 def activeWars(request):
-    pass
+    now_time = time.localtime()
+    now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
+    wars = War.objects.filter(timestamp__lt = now, endtime__gt = now)
+    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.timestamp.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.timestamp).seconds / 60) for war in wars])
+    return HttpResponse(wars_string)
 
 def plannedWars(request):
-    pass
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(timestamp__gt = now)
