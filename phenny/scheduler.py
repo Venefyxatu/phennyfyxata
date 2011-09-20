@@ -49,7 +49,6 @@ class Scheduler(Thread):
         self.tasks_lock = Lock()
         self.halt_flag = Event()
         self.nonempty = Event()
-        logging.basicConfig(filename='/RAID/sandbox/phenny/scheduler.log', level=logging.DEBUG)
         
     def schedule(self, name, start_time, calc_next_time, func):
         task = Task(name, start_time, calc_next_time, func)
