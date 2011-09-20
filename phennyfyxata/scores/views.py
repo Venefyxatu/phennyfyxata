@@ -141,16 +141,16 @@ def singleWarOverview(request, war_id):
     return render_to_response('scores/singleWarOverview.html', {'war': war})
 
 def createWar(request):
-    logging.log(logging.CRITICAL, "Creating a new war")
+    logging.log(logging.INFO, "Creating a new war")
     if request.method == 'POST':
-        logging.log(logging.CRITICAL, "POST method found in createWar")
-        logging.log(logging.CRITICAL, "POST data: %s" % request.POST)
+        logging.log(logging.INFO, "POST method found in createWar")
+        logging.log(logging.INFO, "POST data: %s" % request.POST)
         endtime = request.POST['endtime']
         starttime = request.POST['starttime']
-        logging.log(logging.CRITICAL, "Start time is %s (type %s)" % (starttime, type(starttime)))
-        logging.log(logging.CRITICAL, "End time is %s (type %s)" % (endtime, type(endtime)))
+        logging.log(logging.INFO, "Start time is %s (type %s)" % (starttime, type(starttime)))
+        logging.log(logging.INFO, "End time is %s (type %s)" % (endtime, type(endtime)))
         war = War.objects.create(timestamp=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(starttime))), endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
-        logging.log(logging.CRITICAL, "Created war")
+        logging.log(logging.INFO, "Created war")
         html = str(war.id)
         return HttpResponse(html)
     raise Http404
@@ -166,6 +166,7 @@ def activeWars(request):
     return HttpResponse(wars_string)
 
 def plannedWars(request):
+    logging.log(logging.INFO, 'Retrieving planned wars')
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(timestamp__gt = now)
