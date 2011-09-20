@@ -82,8 +82,15 @@ def _call_django(location, method='GET', urldata=None):
 
 def _parse_arguments(arguments):
     start, end = arguments.split()
-    start_hour, start_minute = start.split(':')
-    end_hour, end_minute = end.split(':')
+    if start.lower() == 'busy':
+        start = time.strftime('%H:%M', time.localtime())
+    try:
+        starttuple = time.strptime(start, '%H:%M')
+        endtuple = time.strptime(end, '%H:%M')
+        start_hour, start_minute = starttuple.tm_hour, starttuple.tm_min
+        end_hour, end_minute = endtuple.tm_hour, endtuple.tm_min
+    except:
+        raise RuntimeError('Oei, dat is een uur dat niet op mijn horloge staat :(')
     return int(start_hour), int(start_minute), int(end_hour), int(end_minute)
 
 def start_war(phenny, war_id):
@@ -96,7 +103,12 @@ def war(phenny, input):
     """
     Time een war
     """
-    start_hour, start_minute, end_hour, end_minute = _parse_arguments(input.group(2))
+    
+    try:
+        start_hour, start_minute, end_hour, end_minute = _parse_arguments(input.group(2))
+    except RuntimeError, e:
+        phenny.say(e.message)
+        return
     _schedule_war(phenny, {'start_hour': start_hour, 'start_minute': start_minute, 'end_hour': end_hour, 'end_minute': end_minute})
 
 war.commands = ['war']
