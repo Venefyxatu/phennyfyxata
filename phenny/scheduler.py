@@ -31,7 +31,8 @@ class Task(object):
                     raise
             finally:
                 if isinstance(self.func, RunOnce):
-                    self.halt_flag.set()
+                    logging.debug("Setting halt flag on %s task" % (self.name))
+                    self.halt()
                 else:
                     self.scheduled_time = self.calc_next_time(self.scheduled_time)
                     logging.debug("Scheduled next run of %s for: %s" % (self.name, self.scheduled_time,))
@@ -48,13 +49,16 @@ class Scheduler(Thread):
         self.tasks_lock = Lock()
         self.halt_flag = Event()
         self.nonempty = Event()
+        logging.basicConfig(filename='/RAID/sandbox/phenny/scheduler.log', level=logging.DEBUG)
         
     def schedule(self, name, start_time, calc_next_time, func):
         task = Task(name, start_time, calc_next_time, func)
         receipt = self.schedule_task(task)
+        logging.debug('Scheduling task %s at %s' % (name, start_time))
         return receipt
     
     def schedule_task(self, task):
+        logging.debug("Scheduling task %s" % task.name)
         receipt = random.random()
         
         self.tasks_lock.acquire()
@@ -65,6 +69,8 @@ class Scheduler(Thread):
         return receipt
     
     def drop(self, task_receipt):
+        logging.debug("************ Dropping task %s" % self.tasks[task_receipt].name)
+        logging.debug("Task list is at this moment %s" % [task.name for task in self.tasks.values()])
         self.tasks_lock.acquire()
         try:
             self.tasks[task_receipt].halt()
@@ -74,8 +80,10 @@ class Scheduler(Thread):
         except KeyError:
             logging.error('Invalid task receipt: %s' % (task_receipt,))
         self.tasks_lock.release()
+        logging.debug("Task list is at this moment %s" % [task.name for task in self.tasks.values()])
         
     def halt(self):
+        logging.debug("Stopping the scheduler")
         self.halt_flag.set()
         # Drop all active tasks
         map(self.drop, self.tasks.keys())
@@ -83,6 +91,7 @@ class Scheduler(Thread):
         sys.exit()
         
     def __find_next_task(self):
+        logging.debug("Finding next task in %s" % self.tasks)
         self.tasks_lock.acquire()
         items = self.tasks.items()
         by_time = lambda x: operator.getitem(x, 1).scheduled_time
@@ -98,6 +107,11 @@ class Scheduler(Thread):
         while 1:
             receipt = self.__find_next_task()
             if receipt != None:
+                logging.debug("Checking whether I need to drop task %s: %s" % (self.tasks[receipt].name, self.tasks[receipt].halt_flag.isSet()))
+                if self.tasks[receipt].halt_flag.isSet():
+                    logging.debug("Dropping task %s" % self.tasks[receipt].name)
+                    self.drop(receipt)
+                    continue
                 task_time = self.tasks[receipt].scheduled_time  
                 time_to_wait = task_time - datetime.datetime.now()
                 secs_to_wait = 0.
@@ -113,12 +127,15 @@ class Scheduler(Thread):
                         logging.debug("Running %s..." % (task.name,))
                         task.run()
                     finally:
+                        logging.debug("Current task list: %s" % [task.name for task in self.tasks.values()])
                         self.tasks_lock.release()
                 except Exception, e:
                     logging.exception(e)
                     logging.debug( self.tasks )
             else:
+                logging.debug("Waiting nonempty")
                 self.nonempty.wait()
+                logging.debug("Done waiting nonempty")
 
 def every_x_secs(x):
     """

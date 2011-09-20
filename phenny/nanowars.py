@@ -13,19 +13,15 @@ from modules.scheduler import every_x_mins
 from modules.scheduler import every_x_secs
 
 djangoUrl = 'http://phenny.venefyxatu.be/'
-djangoUrl = 'http://127.0.0.1:8000/'
 scheduler = Scheduler()
 action = chr(1)+'ACTION '
 
+_TIME_REGEX = re.compile('[0-2]?[0-9]:[0-5]?[0-9]')
 _WARID_REGEX = re.compile('War (\d+):')
 _WARSTART_REGEX = re.compile('War \d+: (\d{1,2}:\d{1,2}) tot')
 _WAREND_REGEX = re.compile('tot (\d{1,2}:\d{1,2})')
 
-wars = {}
-
-import inspect
 def setup(phenny):
-    print "SETUP CALLED"
     scheduler.start()
     #_check_planned_wars(phenny)
 
@@ -36,9 +32,10 @@ def _to_epoch(hour, minute):
         war = war + datetime.timedelta(days=1)
     elif war.hour == now.hour and war.minute < now.minute:
         war = war + datetime.timedelta(days=1)
-    return war.strftime('%s')
+    return war
 
 def _check_planned_wars(phenny):
+    # Will also be called on reload - doesn't need to happen then
     result = _call_django('wars/planned')
     for war in result.read().split(','):
         war_data = _extract_war_data(war)
@@ -56,15 +53,18 @@ def _extract_war_data(war):
     return {'id': id, 'start_hour': int(start_hour), 'start_minute': int(start_minute), 'end_hour': int(end_hour), 'end_minute': int(end_minute)}
 
 def _schedule_war(phenny, war_data):
+    starttime = _to_epoch(war_data['start_hour'], war_data['start_minute'])
+    endtime = _to_epoch(war_data['end_hour'], war_data['end_minute'])
     if 'id' not in war_data.keys():
         urldata = {
-                "starttime": _to_epoch(war_data['start_hour'], war_data['start_minute']),
-                "endtime": _to_epoch(war_data['end_hour'], war_data['end_minute'])}
-        war_data['id'] = _call_django('wars/new', 'POST', urldata=urldata)
+                "starttime": starttime.strftime('%s'),
+                "endtime": endtime.strftime('%s')}
+        war_data['id'] = _call_django('wars/new/', 'POST', urldata=urldata).read()
     if hasattr(phenny, 'say'):
         phenny.say('War %s gepland van %s:%s tot %s:%s.' % (war_data['id'], war_data['start_hour'], war_data['start_minute'], war_data['end_hour'], war_data['end_minute']))
-    start_receipt = scheduler.schedule('War %s start' % war_data['id'], datetime.datetime(2011, 9, 9, war_data['start_hour'], war_data['start_minute']), every_x_secs(10), RunOnce(start_war, {'phenny': phenny, 'war_id': war_data['id']}))
-    end_receipt = scheduler.schedule('War %s end' % war_data['id'], datetime.datetime(2011, 9, 9, war_data['end_hour'], war_data['end_minute']), every_x_secs(10), RunOnce(stop_war, {'phenny': phenny, 'war_id': war_data['id']}))
+    start_receipt = scheduler.schedule('War %s start' % war_data['id'], starttime, every_x_secs(10), RunOnce(start_war, {'phenny': phenny, 'war_id': war_data['id']}))
+    print 'scheduling end'
+    end_receipt = scheduler.schedule('War %s end' % war_data['id'], endtime, every_x_secs(10), RunOnce(stop_war, {'phenny': phenny, 'war_id': war_data['id']}))
 
 def _call_django(location, method='GET', urldata=None):
     method = method in ['GET', 'POST'] and method or 'GET'
@@ -72,8 +72,6 @@ def _call_django(location, method='GET', urldata=None):
 
     if urldata:
         urldata = urllib.urlencode(urldata)
-    print 'url is %s' % url
-    print 'urldata encoded is %s' % urldata
         
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(url, data=urldata)
@@ -100,7 +98,6 @@ def war(phenny, input):
     """
     start_hour, start_minute, end_hour, end_minute = _parse_arguments(input.group(2))
     _schedule_war(phenny, {'start_hour': start_hour, 'start_minute': start_minute, 'end_hour': end_hour, 'end_minute': end_minute})
-    phenny.say('%s wil oorlog!' % input.nick)
 
 war.commands = ['war']
 war.example = '.war 15:50 16:00' 
