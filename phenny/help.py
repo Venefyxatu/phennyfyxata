@@ -30,6 +30,8 @@ def motivation_help(phenny, nick):
             "Nog eventjes doorbijten! Dan haal je het en dan is het parrr-tayyy-tijd!",
             "Niet miepen maar tiepen!",
             "Minder miepen, meer tiepen!",
+            "Beschrijf het landschap tot in detail. Gooi er nu een mega-aardbeving tegenaan. Nu kan je het volledig veranderde landschap nog eens beschrijven!",
+            "Bekijk dit eens: http://phenny.venefyxatu.be/Procrastination.jpg",
             ]
     chosen = random.choice(choices)
     while chosen in topicCache:
