@@ -16,7 +16,6 @@ djangoUrl = 'http://phenny.venefyxatu.be/'
 scheduler = Scheduler()
 action = chr(1)+'ACTION '
 
-_TIME_REGEX = re.compile('[0-2]?[0-9]:[0-5]?[0-9]')
 _WARID_REGEX = re.compile('War (\d+):')
 _WARSTART_REGEX = re.compile('War \d+: (\d{1,2}:\d{1,2}) tot')
 _WAREND_REGEX = re.compile('tot (\d{1,2}:\d{1,2})')
@@ -146,6 +145,17 @@ def score(phenny, input):
     confirm = False
     if len(params) == 3 and params[2].lower() == 'zeker':
         confirm = True
+    try:
+        result = _call_django('wars/%s/info/' % war_id, 'GET')
+    except urllib2.HTTPError:
+        phenny.say('Die war ken ik niet, %s' % input.nick)
+        return
+    war_info = result.read()
+    war_info = eval(war_info)
+    war_end_delta = datetime.datetime.now() - datetime.datetime.strptime(war_info['end'], '%Y-%m-%d %H:%M:%S') 
+    if war_end_delta.days >= 1 and not confirm:
+        phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
+        return
     result = _call_django('writers/%s/registerscore/' % input.nick, 'POST', {'score': score, 'war': war_id})
     if result.msg == 'OK':
         phenny.say("Score %s staat genoteerd voor war %s, %s." % (score, war_id, input.nick))

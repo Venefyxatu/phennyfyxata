@@ -133,6 +133,15 @@ def documentation(request):
 def documentationDutch(request):
     return render_to_response('scores/documentation.nl.html')
 
+def singleWarInfo(request, war_id):
+    try:
+        war = War.objects.get(id=war_id)
+    except ObjectDoesNotExist:
+        raise Http404
+
+    info = "{'start': '%s', 'end': '%s'}" % (war.timestamp, war.endtime)
+    return HttpResponse(info)
+
 def singleWarOverview(request, war_id):
     try:
         war = War.objects.get(id=war_id)
