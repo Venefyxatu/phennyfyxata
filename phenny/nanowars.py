@@ -114,18 +114,22 @@ def war(phenny, input):
 war.commands = ['war']
 war.example = '.war 15:50 16:00' 
 
-
-
-def plannedwars(phenny, input):
+def warsoverview(phenny, input):
+    """ Geef een overzicht van de actieve wars
     """
-    Geef een overzicht van de geplande wars
-    """
-
-    result = _call_django('wars/planned')
-    for war in result.read().split(','):
+    result = _call_django('wars/%s' % input[1:-4])
+    wars = result.read()
+    if not wars:
+        if input == '.plannedwars':
+            phenny.say('Er zijn geen wars gepland')
+        else:
+            phenny.say('Er zijn geen wars bezig')
+    wars = wars.split(',')
+    for war in wars:
         phenny.say(war)
 
-plannedwars.commands = ['plannedwars']
+warsoverview.commands = ['activewars', 'plannedwars']
+
 
 def score(phenny, input):
     """
