@@ -37,9 +37,16 @@ def registerScore(request, nickname):
         if warCreated:
             war.save()
         
-        ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
-        ps.score = score
-        ps.save()
+        if score == '0':
+            try:
+                ps = ParticipantScore.objects.get(writer=writer, war=war)
+                ps.delete()
+            except ObjectDoesNotExist:
+                return HttpResponse("OK")
+        else:
+            ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
+            ps.score = score
+            ps.save()
     return HttpResponse("OK")
 
 

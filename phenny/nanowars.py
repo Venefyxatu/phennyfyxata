@@ -158,7 +158,10 @@ def score(phenny, input):
         return
     result = _call_django('writers/%s/registerscore/' % input.nick, 'POST', {'score': score, 'war': war_id})
     if result.msg == 'OK':
-        phenny.say("Score %s staat genoteerd voor war %s, %s." % (score, war_id, input.nick))
+        if score == 0:
+            phenny.say('Ik heb je score voor war %s verwijderd, %s.' % (war_id, input.nick))
+        else:
+            phenny.say('Score %s staat genoteerd voor war %s, %s.' % (score, war_id, input.nick))
 
 score.commands = ['score']
 score.example = '.score 1 2003'
