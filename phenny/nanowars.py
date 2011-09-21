@@ -127,5 +127,27 @@ def plannedwars(phenny, input):
 
 plannedwars.commands = ['plannedwars']
 
+def score(phenny, input):
+    """
+    Registreer je score
+    """
+
+    params = input.group(2).split(' ')
+    try:
+        war_id = int(params[0])
+        score = int(params[1])
+    except ValueError:
+        phenny.say("Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score" % input.nick)
+        return
+    confirm = False
+    if len(params) == 3 and params[2].lower() == 'zeker':
+        confirm = True
+    result = _call_django('writers/%s/registerscore/' % input.nick, 'POST', {'score': score, 'war': war_id})
+    if result.msg == 'OK':
+        phenny.say("Score %s staat genoteerd voor war %s, %s." % (score, war_id, input.nick))
+
+score.commands = ['score']
+score.example = '.score 1 2003'
+
 if __name__ == '__main__': 
     print __doc__.strip()
