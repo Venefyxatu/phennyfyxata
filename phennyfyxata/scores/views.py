@@ -163,6 +163,15 @@ def singleWarOverview(request, war_id):
         raise Http404
     return render_to_response('scores/singleWarOverview.html', {'war': war})
 
+
+def participateWar(request):
+    pass
+
+
+def withdrawWar(request):
+    pass
+
+
 def createWar(request):
     logging.log(logging.INFO, "Creating a new war")
     if request.method == 'POST':

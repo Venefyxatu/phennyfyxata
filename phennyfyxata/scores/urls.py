@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('phennyfyxata.scores.views', 
+urlpatterns = patterns('phennyfyxata.scores.views',
         url(r'^$', 'goToWars'),
         url(r'^writers/(?P<nickname>.+)/registerscore/$', 'registerScore'),
         url(r'^writers/(?P<nickname>.+)/overview/$', 'singleWriterOverview'),
@@ -11,6 +11,8 @@ urlpatterns = patterns('phennyfyxata.scores.views',
         url('^wars/new/$', 'createWar'),
         url('^wars/active/$', 'activeWars'),
         url('^wars/planned/$', 'plannedWars'),
+        url('^wars/withdraw/$', 'withdrawWar'),
+        url('^wars/participate/$', 'participateWar'),
         url('^documentation/$', 'documentation'),
         url('^documentation/nl/$', 'documentationDutch'),
         url('^language/$', 'language'),
