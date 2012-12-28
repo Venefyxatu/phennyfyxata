@@ -1,3 +1,3 @@
 import logging
 
-logging.basicConfig(filename="/RAID/sandbox/django/phennyfyxata.log", level=logging.INFO)
+logging.basicConfig(filename="/var/www/venefyxatu.be/phenny/phennyfyxata.log", level=logging.INFO)

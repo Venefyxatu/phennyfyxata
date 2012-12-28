@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append('/RAID/sandbox/django/phennyfyxata')
+sys.path.append('/var/www/venefyxatu.be/phenny')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'phennyfyxata.settings'
 
