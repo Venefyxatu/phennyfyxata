@@ -8,10 +8,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
-from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.paginator import Paginator
 
 from templatetags.scores_extras import get_time_warred
-from templatetags.scores_extras import get_winner_nick
 from templatetags.scores_extras import get_participant_list
 
 from phennyfyxata.scores.models import War
@@ -19,6 +18,7 @@ from phennyfyxata.scores.models import Writer
 from phennyfyxata.scores.models import ParticipantScore
 
 import django_tables as tables
+
 
 def registerScore(request, nickname):
     if request.method == 'POST':
@@ -36,7 +36,7 @@ def registerScore(request, nickname):
         war, warCreated = War.objects.get_or_create(id=warId)
         if warCreated:
             war.save()
-        
+
         if score == '0':
             try:
                 ps = ParticipantScore.objects.get(writer=writer, war=war)
@@ -52,6 +52,7 @@ def registerScore(request, nickname):
 
 def goToWars(request):
     return HttpResponseRedirect("/wars/")
+
 
 def writersOverview(request):
     getDict = {}
@@ -78,7 +79,7 @@ def writersOverview(request):
         totalwars = len(participantScores)
         seconds_warred, time_warred = get_time_warred(writer_name)
 
-        allwriters.append({"writer_name":writer_link, "total_score":totalscore, "total_wars":totalwars, "time_warred":time_warred, "seconds_warred":seconds_warred})
+        allwriters.append({"writer_name": writer_link, "total_score": totalscore, "total_wars": totalwars, "time_warred": time_warred, "seconds_warred": seconds_warred})
 
     writertable = WriterTable(allwriters, order_by=getDict.get('sort', 'writer_name'))
 
@@ -94,14 +95,16 @@ def writersOverview(request):
 
     sort = request.GET.get('sort', 'writer_name')
 
-    return render_to_response('scores/writersOverview.html', {'table':writertable, 'sort':sort})
+    return render_to_response('scores/writersOverview.html', {'table': writertable, 'sort': sort})
+
 
 def singleWriterOverview(request, nickname):
     try:
-        writer  = Writer.objects.get(nick=nickname)
+        writer = Writer.objects.get(nick=nickname)
     except ObjectDoesNotExist:
         raise Http404
     return render_to_response('scores/singleWriterOverview.html', {'writer': writer})
+
 
 def warsOverview(request):
 
@@ -116,7 +119,7 @@ def warsOverview(request):
         wartime = '%s - %s' % (war.timestamp, war.endtime)
         participantlist = get_participant_list(war.id)
 
-        allwars.append({"war_id":war_link, "timestamp":wartime, "participants":participantlist})
+        allwars.append({"war_id": war_link, "timestamp": wartime, "participants": participantlist})
 
     wartable = WarTable(allwars, order_by=request.GET.get('sort', 'war_id'))
 
@@ -132,13 +135,16 @@ def warsOverview(request):
 
     sort = request.GET.get('sort', 'war_id')
 
-    return render_to_response('scores/warsOverview.html', {'table': wartable, 'sort':sort})
+    return render_to_response('scores/warsOverview.html', {'table': wartable, 'sort': sort})
+
 
 def documentation(request):
     return render_to_response('scores/documentation.html')
 
+
 def documentationDutch(request):
     return render_to_response('scores/documentation.nl.html')
+
 
 def singleWarInfo(request, war_id):
     try:
@@ -148,6 +154,7 @@ def singleWarInfo(request, war_id):
 
     info = "{'start': '%s', 'end': '%s'}" % (war.timestamp, war.endtime)
     return HttpResponse(info)
+
 
 def singleWarOverview(request, war_id):
     try:
@@ -171,20 +178,23 @@ def createWar(request):
         return HttpResponse(html)
     raise Http404
 
+
 def language(request):
     return render_to_response('scores/language.html')
+
 
 def activeWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
-    wars = War.objects.filter(timestamp__lt = now, endtime__gt = now)
+    wars = War.objects.filter(timestamp__lt=now, endtime__gt=now)
     wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.timestamp.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.timestamp).seconds / 60) for war in wars])
     return HttpResponse(wars_string)
+
 
 def plannedWars(request):
     logging.log(logging.INFO, 'Retrieving planned wars')
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
-    wars = War.objects.filter(timestamp__gt = now)
+    wars = War.objects.filter(timestamp__gt=now)
     wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.timestamp.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.timestamp).seconds / 60) for war in wars])
     return HttpResponse(wars_string)
