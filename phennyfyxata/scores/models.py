@@ -8,12 +8,12 @@ class Writer(models.Model):
 
 class War(models.Model):
     id = models.AutoField(primary_key=True)
-    timestamp = models.DateTimeField()
+    starttime = models.DateTimeField()
     endtime = models.DateTimeField()
     finished = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return "War %s: %s tot %s (%s minuten)" % (self.id, self.timestamp.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - self.timestamp).seconds / 60)
+        return "War %s: %s tot %s (%s minuten)" % (self.id, self.starttime.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - self.starttime).seconds / 60)
 
 
 class ParticipantScore(models.Model):

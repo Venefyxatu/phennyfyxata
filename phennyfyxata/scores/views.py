@@ -110,16 +110,16 @@ def warsOverview(request):
 
     class WarTable(tables.Table):
         war_id = tables.Column(name='war_id', verbose_name=_("War ID"), sortable=False)
-        timestamp = tables.Column(name='timestamp', verbose_name=_("Timestamp"), sortable=False)
+        starttime = tables.Column(name='starttime', verbose_name=_("Starttime"), sortable=False)
         participants = tables.Column(name='participants', verbose_name=_("Participants"), sortable=False)
 
     allwars = []
     for war in War.objects.all():
         war_link = '<a href="/wars/%s/overview/">%s</a>' % (war.id, war.id)
-        wartime = '%s - %s' % (war.timestamp, war.endtime)
+        wartime = '%s - %s' % (war.starttime, war.endtime)
         participantlist = get_participant_list(war.id)
 
-        allwars.append({"war_id": war_link, "timestamp": wartime, "participants": participantlist})
+        allwars.append({"war_id": war_link, "starttime": wartime, "participants": participantlist})
 
     wartable = WarTable(allwars, order_by=request.GET.get('sort', 'war_id'))
 
@@ -152,7 +152,7 @@ def singleWarInfo(request, war_id):
     except ObjectDoesNotExist:
         raise Http404
 
-    info = "{'start': '%s', 'end': '%s'}" % (war.timestamp, war.endtime)
+    info = "{'start': '%s', 'end': '%s'}" % (war.starttime, war.endtime)
     return HttpResponse(info)
 
 
@@ -181,7 +181,7 @@ def createWar(request):
         starttime = request.POST['starttime']
         logging.log(logging.INFO, "Start time is %s (type %s)" % (starttime, type(starttime)))
         logging.log(logging.INFO, "End time is %s (type %s)" % (endtime, type(endtime)))
-        war = War.objects.create(timestamp=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(starttime))), endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
+        war = War.objects.create(starttime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(starttime))), endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
         logging.log(logging.INFO, "Created war")
         html = str(war.id)
         return HttpResponse(html)
@@ -195,8 +195,8 @@ def language(request):
 def activeWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
-    wars = War.objects.filter(timestamp__lt=now, endtime__gt=now)
-    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.timestamp.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.timestamp).seconds / 60) for war in wars])
+    wars = War.objects.filter(starttime__lt=now, endtime__gt=now)
+    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.starttime.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.starttime).seconds / 60) for war in wars])
     return HttpResponse(wars_string)
 
 
@@ -204,6 +204,6 @@ def plannedWars(request):
     logging.log(logging.INFO, 'Retrieving planned wars')
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
-    wars = War.objects.filter(timestamp__gt=now)
-    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.timestamp.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.timestamp).seconds / 60) for war in wars])
+    wars = War.objects.filter(starttime__gt=now)
+    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.starttime.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.starttime).seconds / 60) for war in wars])
     return HttpResponse(wars_string)

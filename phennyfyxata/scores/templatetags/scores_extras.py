@@ -151,7 +151,7 @@ class WarsForWriterNode(template.Node):
     def render(self, context):
         writer_name = self.writer_name.resolve(context)
         participantWars = ParticipantScore.objects.filter(writer__nick=writer_name).order_by("war__id")
-        return "".join(map(lambda x: '<tr><td><a href="/wars/%s/overview/">%s</a></td><td>%s</td><td>%s</td><td>%s</td>' % (x.war.id, x.war.id, x.war.timestamp.strftime("%Y-%m-%d %H:%M"), x.war.endtime.strftime("%Y-%m-%d %H:%M"), x.score), participantWars))
+        return "".join(map(lambda x: '<tr><td><a href="/wars/%s/overview/">%s</a></td><td>%s</td><td>%s</td><td>%s</td>' % (x.war.id, x.war.id, x.war.starttime.strftime("%Y-%m-%d %H:%M"), x.war.endtime.strftime("%Y-%m-%d %H:%M"), x.score), participantWars))
 
 def time_warred(parser, token):
     try:
@@ -174,7 +174,7 @@ def get_time_warred(writer_name):
         participantWars = War.objects.filter(participantscore__writer__nick=writer_name)
         totalSeconds = 0
         for war in participantWars:
-            duration = war.endtime - war.timestamp 
+            duration = war.endtime - war.starttime
             durationSeconds = duration.seconds + (duration.days * 86400)
             totalSeconds += durationSeconds
         secondsLeft = totalSeconds % 86400
