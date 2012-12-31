@@ -112,3 +112,48 @@ class ParticipantTests(TestCase):
             response = self.c.get('/wars/%s/listparticipants/' % self.war.id)
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
             assert response.content == '', 'Response should be empty string, not %s' % response.content
+
+
+class WarTests(TestCase):
+    def setUp(self):
+        self.c = Client()
+        self.starttime = datetime.datetime.now() + datetime.timedelta(0, 300)
+        self.endtime = self.starttime + datetime.timedelta(0, 600)
+
+    def test_create_war(self):
+        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        assert len(War.objects.all()) == 1, 'There should be 1 war, not %s' % len(War.objects.all())
+
+    def test_no_active_wars(self):
+        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        response = self.c.get('/wars/active/')
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        assert response.content == "", 'Response should be "", not %s' % response.content
+
+    def test_active_wars(self):
+        starttime = datetime.datetime.now()
+        response = self.c.post('/wars/new/', {'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        response = self.c.get('/wars/active/')
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        expected_response = "War 1: %s tot %s (%s minuten)" % (starttime.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - starttime).seconds / 60)
+        assert response.content == expected_response, 'Response should be "%s", not %s' % (expected_response, response.content)
+
+    def test_planned_wars(self):
+        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        response = self.c.get('/wars/planned/')
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        expected_response = "War 1: %s tot %s (%s minuten)" % (self.starttime.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - self.starttime).seconds / 60)
+        assert response.content == expected_response, 'Response should be %s, not %s' % (expected_response, response.content)
+
+    def test_no_planned_wars(self):
+        response = self.c.get('/wars/planned/')
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        expected_response = ""
+        assert response.content == expected_response, 'Response should be %s, not %s' % (expected_response, response.content)
