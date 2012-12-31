@@ -1,23 +1,26 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
-
-Replace these with more appropriate tests for your application.
-"""
+import datetime
 
 from django.test import TestCase
+from django.test.client import Client
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+from scores.models import War
+from scores.models import Writer
+from scores.models import WarParticipants
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
 
->>> 1 + 1 == 2
-True
-"""}
+class ParticipantTests(TestCase):
+        def setUp(self):
+            starttime = datetime.datetime.now() + datetime.timedelta(0, 300)
+            endtime = starttime + datetime.timedelta(0, 600)
 
+            self.war = War(starttime=starttime, endtime=endtime)
+            self.war.save()
+            self.writer = Writer(nick='TestWriter')
+            self.writer.save()
+            self.c = Client()
+
+        def test_participate_war(self):
+            response = self.c.post('/wars/%s/participate/' % self.war.id, {'writer': self.writer.nick})
+            assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+            participants = WarParticipants.objects.filter(war__id=self.war.id, participant__id=self.writer.id)
+            assert len(participants) == 1, 'Should have 1 participant, not %s' % len(participants)

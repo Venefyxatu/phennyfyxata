@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Writer(models.Model):
-    alias = models.ForeignKey('Writer')
+    alias = models.ForeignKey('Writer', blank=True, null=True)
     nick = models.CharField(unique=True, max_length=16)
 
 

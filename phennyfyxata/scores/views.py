@@ -15,6 +15,7 @@ from templatetags.scores_extras import get_participant_list
 
 from phennyfyxata.scores.models import War
 from phennyfyxata.scores.models import Writer
+from phennyfyxata.scores.models import WarParticipants
 from phennyfyxata.scores.models import ParticipantScore
 
 import django_tables as tables
@@ -164,12 +165,22 @@ def singleWarOverview(request, war_id):
     return render_to_response('scores/singleWarOverview.html', {'war': war})
 
 
-def participateWar(request):
-    pass
+def participateWar(request, war_id):
+    if request.method == 'POST':
+        participant_nick = request.POST.get('writer')
+        participants = Writer.objects.filter(nick=participant_nick)
+        for participant in participants:
+            logging.log(logging.INFO, "Registering participant %s to war %s" % (participant.id, war_id))
+            war = War.objects.filter(id=war_id)[0]
+            war_participant = WarParticipants(war=war, participant=participant)
+            war_participant.save()
+        return HttpResponse()
+    else:
+        return Http404()
 
 
 def withdrawWar(request):
-    pass
+    logging.log(logging.INFO, "Withdrawing participant from war")
 
 
 def createWar(request):
