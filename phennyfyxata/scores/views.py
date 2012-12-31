@@ -168,30 +168,45 @@ def singleWarOverview(request, war_id):
 def participateWar(request, war_id):
     if request.method == 'POST':
         participant_nick = request.POST.get('writer')
-        participants = Writer.objects.filter(nick=participant_nick)
-        for participant in participants:
-            logging.log(logging.INFO, "Registering participant %s to war %s" % (participant.id, war_id))
-            war = War.objects.filter(id=war_id)[0]
-            war_participant = WarParticipants(war=war, participant=participant)
-            war_participant.save()
+        participant, created = Writer.objects.get_or_create(nick=participant_nick)
+        logging.log(logging.INFO, "Registering participant %s to war %s" % (participant.id, war_id))
+        try:
+            war = War.objects.get(id=war_id)
+        except War.DoesNotExist:
+            raise Http404('This war doesn\'t exist')
+        war_participant, created = WarParticipants.objects.get_or_create(war=war, participant=participant)
         return HttpResponse()
     else:
-        return Http404()
+        raise Http404
 
 
 def withdrawWar(request, war_id):
     if request.method == 'POST':
         logging.log(logging.INFO, "Withdrawing participant from war")
         participant_nick = request.POST.get('writer')
-        participants = Writer.objects.filter(nick=participant_nick)
-        for participant in participants:
-            logging.log(logging.INFO, "Withdrawing participant %s from war %s" % (participant.id, war_id))
-            war = War.objects.filter(id=war_id)[0]
-            war_participant = WarParticipants.objects.filter(war=war, participant=participant)
-            war_participant.delete()
+        participant, created = Writer.objects.get_or_create(nick=participant_nick)
+        logging.log(logging.INFO, "Withdrawing participant %s from war %s" % (participant.id, war_id))
+        wars = War.objects.filter(id=war_id)
+        if not wars:
+            raise Http404()
+        else:
+            war = wars[0]
+        war_participant = WarParticipants.objects.filter(war=war, participant=participant)
+        war_participant.delete()
         return HttpResponse()
     else:
-        return Http404()
+        raise Http404()
+
+
+def listWarParticipants(request, war_id):
+    logging.log(logging.INFO, "Listing participants for war %s" % war_id)
+    wars = War.objects.filter(id=war_id)
+    if not wars:
+        raise Http404('War %s not found' % war_id)
+    else:
+        war = wars[0]
+    participants = WarParticipants.objects.filter(war=war)
+    return HttpResponse(','.join(map(lambda x: x.participant.nick, participants)))
 
 
 def createWar(request):
