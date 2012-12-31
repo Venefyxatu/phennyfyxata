@@ -22,5 +22,19 @@ class ParticipantTests(TestCase):
         def test_participate_war(self):
             response = self.c.post('/wars/%s/participate/' % self.war.id, {'writer': self.writer.nick})
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
             participants = WarParticipants.objects.filter(war__id=self.war.id, participant__id=self.writer.id)
             assert len(participants) == 1, 'Should have 1 participant, not %s' % len(participants)
+
+        def test_withdraw_war(self):
+            response = self.c.post('/wars/%s/participate/' % self.war.id, {'writer': self.writer.nick})
+            assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+            participants = WarParticipants.objects.filter(war__id=self.war.id, participant__id=self.writer.id)
+            assert len(participants) == 1, 'Should have 1 participant, not %s' % len(participants)
+
+            response = self.c.post('/wars/%s/withdraw/' % self.war.id, {'writer': self.writer.nick})
+            assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+            participants = WarParticipants.objects.filter(war__id=self.war.id, participant__id=self.writer.id)
+            assert len(participants) == 0, 'Should have 0 participants, not %s' % len(participants)

@@ -179,8 +179,19 @@ def participateWar(request, war_id):
         return Http404()
 
 
-def withdrawWar(request):
-    logging.log(logging.INFO, "Withdrawing participant from war")
+def withdrawWar(request, war_id):
+    if request.method == 'POST':
+        logging.log(logging.INFO, "Withdrawing participant from war")
+        participant_nick = request.POST.get('writer')
+        participants = Writer.objects.filter(nick=participant_nick)
+        for participant in participants:
+            logging.log(logging.INFO, "Withdrawing participant %s from war %s" % (participant.id, war_id))
+            war = War.objects.filter(id=war_id)[0]
+            war_participant = WarParticipants.objects.filter(war=war, participant=participant)
+            war_participant.delete()
+        return HttpResponse()
+    else:
+        return Http404()
 
 
 def createWar(request):
