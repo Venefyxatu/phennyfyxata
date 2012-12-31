@@ -1,3 +1,4 @@
+import json
 import datetime
 
 from django.test import TestCase
@@ -83,7 +84,8 @@ class ParticipantTests(TestCase):
 
             response = self.c.get('/wars/%s/listparticipants/' % self.war.id)
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-            assert response.content == self.writer.nick, 'Response should be "%s", not %s' % (self.writer.nick, response.content)
+            expected_response = [self.writer.nick]
+            assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
             self.ph.participate(self.war.id, 'NewWriter')
 
@@ -92,8 +94,8 @@ class ParticipantTests(TestCase):
 
             response = self.c.get('/wars/%s/listparticipants/' % self.war.id)
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-            expected_response = ','.join([self.writer.nick, 'NewWriter'])
-            assert response.content == expected_response, 'Response should be "%s", not %s' % (expected_response, response.content)
+            expected_response = [self.writer.nick, 'NewWriter']
+            assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
             self.ph.withdraw(self.war.id, self.writer.nick)
 
@@ -102,7 +104,8 @@ class ParticipantTests(TestCase):
 
             response = self.c.get('/wars/%s/listparticipants/' % self.war.id)
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-            assert response.content == 'NewWriter', 'Response should be "NewWriter", not %s' % response.content
+            expected_response = ['NewWriter']
+            assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
             self.ph.withdraw(self.war.id, 'NewWriter')
 
@@ -111,14 +114,16 @@ class ParticipantTests(TestCase):
 
             response = self.c.get('/wars/%s/listparticipants/' % self.war.id)
             assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-            assert response.content == '', 'Response should be empty string, not %s' % response.content
+            assert json.loads(response.content) == [], 'Response should be [], not %s' % json.loads(response.content)
 
 
 class WarTests(TestCase):
     def setUp(self):
         self.c = Client()
         self.starttime = datetime.datetime.now() + datetime.timedelta(0, 300)
+        self.starttime = self.starttime - datetime.timedelta(0, self.starttime.second, self.starttime.microsecond)
         self.endtime = self.starttime + datetime.timedelta(0, 600)
+        self.endtime = self.endtime - datetime.timedelta(0, self.endtime.second, self.endtime.microsecond)
 
     def test_create_war(self):
         response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
@@ -131,17 +136,18 @@ class WarTests(TestCase):
 
         response = self.c.get('/wars/active/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        assert response.content == "", 'Response should be "", not %s' % response.content
+        assert json.loads(response.content) == [], 'Response should be [], not %s' % json.loads(response.content)
 
     def test_active_wars(self):
         starttime = datetime.datetime.now()
+        starttime = starttime - datetime.timedelta(0, starttime.second, starttime.microsecond)
         response = self.c.post('/wars/new/', {'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
         response = self.c.get('/wars/active/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        expected_response = "War 1: %s tot %s (%s minuten)" % (starttime.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - starttime).seconds / 60)
-        assert response.content == expected_response, 'Response should be "%s", not %s' % (expected_response, response.content)
+        expected_response = [{'id': 1, 'start': starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
+        assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
     def test_planned_wars(self):
         response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
@@ -149,11 +155,11 @@ class WarTests(TestCase):
 
         response = self.c.get('/wars/planned/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        expected_response = "War 1: %s tot %s (%s minuten)" % (self.starttime.strftime("%H:%M"), self.endtime.strftime("%H:%M"), (self.endtime - self.starttime).seconds / 60)
-        assert response.content == expected_response, 'Response should be %s, not %s' % (expected_response, response.content)
+        expected_response = [{'id': 1, 'start': self.starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
+        assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
 
     def test_no_planned_wars(self):
         response = self.c.get('/wars/planned/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        expected_response = ""
-        assert response.content == expected_response, 'Response should be %s, not %s' % (expected_response, response.content)
+        expected_response = []
+        assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))

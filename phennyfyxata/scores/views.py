@@ -1,4 +1,5 @@
 import time
+import json
 import datetime
 import logging
 
@@ -206,7 +207,8 @@ def listWarParticipants(request, war_id):
     else:
         war = wars[0]
     participants = WarParticipants.objects.filter(war=war)
-    return HttpResponse(','.join(map(lambda x: x.participant.nick, participants)))
+
+    return HttpResponse(json.dumps([participant.participant.nick for participant in participants]))
 
 
 def createWar(request):
@@ -233,8 +235,8 @@ def activeWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(starttime__lt=now, endtime__gt=now)
-    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.starttime.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.starttime).seconds / 60) for war in wars])
-    return HttpResponse(wars_string)
+    wars_list = [{'id': war.id, 'start': war.starttime.strftime('%s'), 'end': war.endtime.strftime('%s')} for war in wars]
+    return HttpResponse(json.dumps(wars_list))
 
 
 def plannedWars(request):
@@ -242,5 +244,5 @@ def plannedWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(starttime__gt=now)
-    wars_string = ','.join(["War %s: %s tot %s (%s minuten)" % (war.id, war.starttime.strftime("%H:%M"), war.endtime.strftime("%H:%M"), (war.endtime - war.starttime).seconds / 60) for war in wars])
-    return HttpResponse(wars_string)
+    wars_list = [{'id': war.id, 'start': war.starttime.strftime('%s'), 'end': war.endtime.strftime('%s')} for war in wars]
+    return HttpResponse(json.dumps(wars_list))
