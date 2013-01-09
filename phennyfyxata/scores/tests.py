@@ -21,8 +21,8 @@ class ParticipationHelper:
 
 class ParticipantTests(TestCase):
         def setUp(self):
-            starttime = datetime.datetime.now() + datetime.timedelta(0, 300)
-            endtime = starttime + datetime.timedelta(0, 600)
+            starttime = datetime.datetime.now() + datetime.timedelta(0, seconds=300)
+            endtime = starttime + datetime.timedelta(0, seconds=600)
 
             self.ph = ParticipationHelper()
 
@@ -120,10 +120,10 @@ class ParticipantTests(TestCase):
 class WarTests(TestCase):
     def setUp(self):
         self.c = Client()
-        self.starttime = datetime.datetime.now() + datetime.timedelta(0, 300)
-        self.starttime = self.starttime - datetime.timedelta(0, self.starttime.second, self.starttime.microsecond)
-        self.endtime = self.starttime + datetime.timedelta(0, 600)
-        self.endtime = self.endtime - datetime.timedelta(0, self.endtime.second, self.endtime.microsecond)
+        self.starttime = datetime.datetime.now() + datetime.timedelta(0, seconds=300)
+        self.starttime = self.starttime - datetime.timedelta(0, seconds=self.starttime.second, microseconds=self.starttime.microsecond)
+        self.endtime = self.starttime + datetime.timedelta(0, seconds=600)
+        self.endtime = self.endtime - datetime.timedelta(0, seconds=self.endtime.second, microseconds=self.endtime.microsecond)
 
     def test_create_war(self):
         response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
@@ -140,7 +140,7 @@ class WarTests(TestCase):
 
     def test_active_wars(self):
         starttime = datetime.datetime.now()
-        starttime = starttime - datetime.timedelta(0, starttime.second, starttime.microsecond)
+        starttime = starttime - datetime.timedelta(0, seconds=starttime.second, microseconds=starttime.microsecond)
         response = self.c.post('/wars/new/', {'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
