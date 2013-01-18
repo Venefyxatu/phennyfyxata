@@ -18,6 +18,15 @@ def _convert_to_epoch(start, end, planning_hour):
 
     end = datetime.datetime.strptime('%s %s %s %s' % (planning_hour.year, planning_hour.month, planning_hour.day, end), '%Y %m %d %H:%M')
 
+    start, end = _check_and_add_day(start, end, planning_hour)
+
+    if abs(end - start) > datetime.timedelta(hours=5):
+        raise RuntimeError('Een war van meer dan 5 uur? Ik dacht het niet.')
+
+    return start.strftime('%s'), end.strftime('%s')
+
+
+def _check_and_add_day(start, end, planning_hour):
     if start < planning_hour:
         start += datetime.timedelta(days=1)
 
@@ -29,11 +38,7 @@ def _convert_to_epoch(start, end, planning_hour):
             end += datetime.timedelta(days=1)
         else:
             raise RuntimeError('Het beginuur moet wel voor het einduur liggen he!')
-
-    if abs(end - start) > datetime.timedelta(hours=5):
-        raise RuntimeError('Een war van meer dan 5 uur? Ik dacht het niet.')
-
-    return start.strftime('%s'), end.strftime('%s')
+    return start, end
 
 
 def _call_django(location, method='GET', urldata=None):
