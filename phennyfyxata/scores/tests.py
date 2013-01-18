@@ -7,15 +7,16 @@ from django.test.client import Client
 from scores.models import War
 from scores.models import Writer
 from scores.models import WarParticipants
+from scores.models import ParticipantScore
 
 
 class ParticipationHelper:
     def participate(self, war_id, writer_nick):
-        response = Client().post('/wars/%s/participate/' % war_id, {'writer': writer_nick})
+        response = Client().post('/api/war/%s/participate/' % war_id, {'writer': writer_nick})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
     def withdraw(self, war_id, writer_nick):
-        response = Client().post('/wars/%s/withdraw/' % war_id, {'writer': writer_nick})
+        response = Client().post('/api/war/%s/withdraw/' % war_id, {'writer': writer_nick})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
 
@@ -126,40 +127,40 @@ class WarTests(TestCase):
         self.endtime = self.endtime - datetime.timedelta(0, seconds=self.endtime.second, microseconds=self.endtime.microsecond)
 
     def test_create_war(self):
-        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        response = self.c.post('/api/war/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         assert len(War.objects.all()) == 1, 'There should be 1 war, not %s' % len(War.objects.all())
 
     def test_no_active_wars(self):
-        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        response = self.c.post('/api/war/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
-        response = self.c.get('/wars/active/')
+        response = self.c.get('/api/war/active/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         assert json.loads(response.content) == [], 'Response should be [], not %s' % json.loads(response.content)
 
     def test_active_wars(self):
         starttime = datetime.datetime.now()
         starttime = starttime - datetime.timedelta(0, seconds=starttime.second, microseconds=starttime.microsecond)
-        response = self.c.post('/wars/new/', {'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        response = self.c.post('/api/war/new/', {'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
-        response = self.c.get('/wars/active/')
+        response = self.c.get('/api/war/active/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = [{'id': 1, 'start': starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
         assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
     def test_planned_wars(self):
-        response = self.c.post('/wars/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        response = self.c.post('/api/war/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
-        response = self.c.get('/wars/planned/')
+        response = self.c.get('/api/war/planned/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = [{'id': 1, 'start': self.starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
         assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
 
     def test_no_planned_wars(self):
-        response = self.c.get('/wars/planned/')
+        response = self.c.get('/api/war/planned/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = []
         assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
