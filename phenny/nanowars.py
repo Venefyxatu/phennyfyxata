@@ -78,6 +78,9 @@ def war(phenny, input):
     wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
     t = Timer(wait, phenny.say, ['START war %s' % result['id']])
     t.start()
+    wait_end = int(int(result['endtime']) - int(datetime.datetime.now().strftime('%s')))
+    t_end = Timer(wait_end, phenny.say, ['END war %s' % result['id']])
+    t_end.start()
 
 
 war.commands = ['war']

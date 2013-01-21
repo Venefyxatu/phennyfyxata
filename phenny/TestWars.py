@@ -27,12 +27,14 @@ class HelperFunctions:
         return result
 
 
-class assertMethodIsCalled(object):
+class assertMethodIsCalledTwice(object):
     def __init__(self, obj, method):
         self.obj = obj
         self.method = method
 
     def called(self, *args, **kwargs):
+        if self.method_called:
+            self.method_called_again = True
         self.method_called = True
         self.orig_method(*args, **kwargs)
 
@@ -40,20 +42,42 @@ class assertMethodIsCalled(object):
         self.orig_method = getattr(self.obj, self.method)
         setattr(self.obj, self.method, self.called)
         self.method_called = False
+        self.method_called_verified = False
+        self.method_called_again_verified = False
+        self.method_called_again = False
+
+    def _verify_called(self, traceback, again):
+        assert getattr(self.obj, self.method) == self.called, "method %s was modified during assertMethodIsCalled" % self.method
+
+        if again:
+            setattr(self.obj, self.method, self.orig_method)
+
+        # If an exception was thrown within the block, we've already failed.
+        if traceback is None:
+            if not again:
+                assert self.method_called, "method %s of %s was not called" % (self.method, self.obj)
+            else:
+                assert self.method_called_again, "method %s of %s was not called a second time" % (self.method, self.obj)
 
     def __exit__(self, exc_type, exc_value, traceback):
         expected_start = int(self.obj.expected_start.strftime('%s'))
         now = int(datetime.datetime.now().strftime('%s'))
-        if  expected_start > now:
-            time.sleep(expected_start - now + 5)
+        if expected_start > now:
+            time.sleep(expected_start - now + 2)
 
-        assert getattr(self.obj, self.method) == self.called, "method %s was modified during assertMethodIsCalled" % self.method
+        self._verify_called(traceback, again=False)
 
-        setattr(self.obj, self.method, self.orig_method)
+        if self.method_called_verified == True:
+            self.method_called_again_verified = True
+        self.method_called_verified = True
 
-        # If an exception was thrown within the block, we've already failed.
-        if traceback is None:
-            assert self.method_called, "method %s of %s was not called" % (self.method, self.obj)
+        expected_end = int(self.obj.expected_end.strftime('%s'))
+        now = int(datetime.datetime.now().strftime('%s'))
+
+        if expected_end > now:
+            time.sleep(expected_end - now + 2)
+
+        self._verify_called(traceback, again=True)
 
 
 class DummyPhenny:
@@ -71,8 +95,8 @@ class DummyInput:
 class WarTest(TestCase):
     def setUp(self):
         self.now = datetime.datetime.now()
-        self.start = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
-        self.end = self.now + datetime.timedelta(minutes=3) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        self.start = self.now + datetime.timedelta(minutes=1) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        self.end = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
 
     def test_war(self):
@@ -94,7 +118,7 @@ class WarTest(TestCase):
         inputobj = DummyInput()
         inputobj.properties.append('war')
         inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
-        with assertMethodIsCalled(phenny, 'say'):
+        with assertMethodIsCalledTwice(phenny, 'say'):
             nanowars.war(phenny, inputobj)
 
     def test_schedule_war(self):
