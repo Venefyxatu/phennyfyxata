@@ -22,16 +22,44 @@ from phennyfyxata.scores.models import ParticipantScore
 import django_tables as tables
 
 
-def registerScore(request, nickname):
+def deregisterScore(request):
     if request.method == 'POST':
         logging.log(logging.INFO, "POST method found")
+
+        nickname = request.POST['writer']
+        warId = request.POST['war']
+
+        try:
+            war, warCreated = War.objects.get_or_create(id=warId)
+        except ObjectDoesNotExist:
+            return HttpResponse("No such war")
+
         writer, writerCreated = Writer.objects.get_or_create(nick=nickname)
         logging.log(logging.INFO, "Writer is created: %s" % writerCreated)
         if writerCreated:
             writer.save()
 
+        try:
+            ps = ParticipantScore.objects.get(writer=writer, war=war)
+            ps.delete()
+        except ObjectDoesNotExist:
+            return HttpResponse("OK")
+
+    return HttpResponse("OK")
+
+
+def registerScore(request):
+    if request.method == 'POST':
+        logging.log(logging.INFO, "POST method found")
+
+        nickname = request.POST['writer']
         score = request.POST['score']
         warId = request.POST['war']
+
+        writer, writerCreated = Writer.objects.get_or_create(nick=nickname)
+        logging.log(logging.INFO, "Writer is created: %s" % writerCreated)
+        if writerCreated:
+            writer.save()
 
         logging.log(logging.INFO, "Score is %s. War ID is %s" % (score, warId))
 
@@ -39,16 +67,10 @@ def registerScore(request, nickname):
         if warCreated:
             war.save()
 
-        if score == '0':
-            try:
-                ps = ParticipantScore.objects.get(writer=writer, war=war)
-                ps.delete()
-            except ObjectDoesNotExist:
-                return HttpResponse("OK")
-        else:
-            ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
-            ps.score = score
-            ps.save()
+        ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
+        ps.score = score
+        ps.save()
+
     return HttpResponse("OK")
 
 

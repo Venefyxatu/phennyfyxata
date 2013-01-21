@@ -164,3 +164,67 @@ class WarTests(TestCase):
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = []
         assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
+
+
+class ScoreTests(TestCase):
+    def setUp(self):
+        starttime = datetime.datetime.now() + datetime.timedelta(0, seconds=300)
+        endtime = starttime + datetime.timedelta(0, seconds=600)
+
+        self.war = War(starttime=starttime, endtime=endtime)
+        self.war.save()
+        self.writer = Writer(nick='TestWriter')
+        self.writer.save()
+        self.c = Client()
+
+    def test_register_score(self):
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 200, 'war': self.war.id})
+
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        assert len(ParticipantScore.objects.all()) == 1, 'There should be one ParticipantScore object'
+
+        ps = ParticipantScore.objects.all()[0]
+
+        assert ps.writer == self.writer, 'ParticipantScore writer is not as expected'
+        assert ps.score == 200, 'ParticipantScore score should be 200, not %s' % ps.score
+        assert ps.war == self.war, 'ParticipantScore war is not as expected'
+
+    def test_deregister_score(self):
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 200, 'war': self.war.id})
+
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        assert len(ParticipantScore.objects.all()) == 1, 'There should be one ParticipantScore object'
+
+        ps = ParticipantScore.objects.all()[0]
+
+        assert ps.writer == self.writer, 'ParticipantScore writer is not as expected'
+        assert ps.score == 200, 'ParticipantScore score should be 200, not %s' % ps.score
+        assert ps.war == self.war, 'ParticipantScore war is not as expected'
+
+        response = self.c.post('/api/score/deregister/', {'writer': self.writer.nick, 'war': self.war.id})
+
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        assert len(ParticipantScore.objects.all()) == 0, 'There should be no ParticipantScore objects'
+
+    def test_update_score(self):
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 200, 'war': self.war.id})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+        assert len(ParticipantScore.objects.all()) == 1, 'There should be one ParticipantScore object'
+
+        ps = ParticipantScore.objects.all()[0]
+        assert ps.score == 200, 'ParticipantScore score should be 200, not %s' % ps.score
+
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 400, 'war': self.war.id})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        ps = ParticipantScore.objects.all()[0]
+        assert ps.score == 400, 'ParticipantScore score should be 400, not %s' % ps.score
+
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 100, 'war': self.war.id})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        ps = ParticipantScore.objects.all()[0]
+        assert ps.score == 100, 'ParticipantScore score should be 100, not %s' % ps.score
