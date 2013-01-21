@@ -40,7 +40,7 @@ class WarTest(TestCase):
         start = self.now + datetime.timedelta(minutes=5) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         end = self.now + datetime.timedelta(minutes=9) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
 
-        war_data = nanowars._schedule_war(self.phenny, start=start.strftime('%H:%M'), end=end.strftime('%H:%M'), planning_hour=self.now)
+        war_data = nanowars._schedule_war(self.phenny, start=start.strftime('%s'), end=end.strftime('%s'))
         expected_data = {'id': 1, 'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')}
         assert war_data == expected_data, 'War data should be %s, not %s' % (expected_data, war_data)
 

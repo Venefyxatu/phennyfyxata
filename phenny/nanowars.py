@@ -11,8 +11,7 @@ djangoUrl = 'http://localhost:8000/'
 action = chr(1) + 'ACTION '
 
 
-def _schedule_war(phenny, start, end, planning_hour):
-    start, end = _convert_to_epoch(start, end, planning_hour)
+def _schedule_war(phenny, start, end):
     result = _call_django('api/war/new/', 'POST', {'starttime': start, 'endtime': end})
 
     lines = '\n'.join(result.readlines())
@@ -70,6 +69,9 @@ def war(phenny, input):
     """
     Time een war
     """
+    planning_hour = datetime.datetime.now()
+    start, end = _convert_to_epoch(start, end, planning_hour)
+    _schedule_war(start, end)
 
 war.commands = ['war']
 war.example = '.war 15:50 16:00'
