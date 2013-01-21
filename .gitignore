@@ -1,3 +1,6 @@
 fabfile.py
 fabric.rc
 *pyc
+.ropeproject
+*png
+phenny_scores.db
