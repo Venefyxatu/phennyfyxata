@@ -5,6 +5,13 @@ from unittest import TestCase
 
 
 class TimeTest(TestCase):
+    def shortDescription(self):
+        ''' Hack to prevent docstring from being used with nosetests -v
+        see http://www.saltycrane.com/blog/2012/07/how-prevent-nose-unittest-using-docstring-when-verbosity-2/
+        '''
+
+        return None
+
     def setUp(self):
         self.now = datetime.datetime.now()
         self.planning_hour = datetime.datetime(self.now.year, self.now.month, self.now.day, 15)
@@ -197,7 +204,7 @@ class TimeTest(TestCase):
         assert result_end == expected_end, 'Expected end: %s (%s). Received end: %s (%s)' % (expected_end, datetime.datetime.fromtimestamp(int(expected_end)), result_end, datetime.datetime.fromtimestamp(int(result_end)))
 
     def test_start_today_past_end_tomorrow_before_lt_max(self):
-        ''' "before" in this context means that the hour has already passed on the CURRENT day '''
+        '"before" in this context means that the hour has already passed on the CURRENT day'
 
         start = datetime.datetime(self.now.year, self.now.month, self.now.day, 23, 30)
         end = datetime.datetime(self.now.year, self.now.month, self.now.day, 0, 30)
