@@ -1,4 +1,6 @@
+import time
 import json
+import types
 import urllib
 import urllib2
 import nanowars
@@ -25,30 +27,87 @@ class HelperFunctions:
         return result
 
 
+class assertMethodIsCalled(object):
+    def __init__(self, obj, method):
+        self.obj = obj
+        self.method = method
+
+    def called(self, *args, **kwargs):
+        self.method_called = True
+        self.orig_method(*args, **kwargs)
+
+    def __enter__(self):
+        self.orig_method = getattr(self.obj, self.method)
+        setattr(self.obj, self.method, self.called)
+        self.method_called = False
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        expected_start = int(self.obj.expected_start.strftime('%s'))
+        now = int(datetime.datetime.now().strftime('%s'))
+        if  expected_start > now:
+            time.sleep(expected_start - now + 5)
+
+        assert getattr(self.obj, self.method) == self.called, "method %s was modified during assertMethodIsCalled" % self.method
+
+        setattr(self.obj, self.method, self.orig_method)
+
+        # If an exception was thrown within the block, we've already failed.
+        if traceback is None:
+            assert self.method_called, "method %s of %s was not called" % (self.method, self.obj)
+
+
 class DummyPhenny:
     def say(self, say_what):
         return say_what
 
 
+class DummyInput:
+    properties = [None]
+
+    def group(self, index):
+        return self.properties[index]
+
+
 class WarTest(TestCase):
     def setUp(self):
-        self.phenny = DummyPhenny()
         self.now = datetime.datetime.now()
+        self.start = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        self.end = self.now + datetime.timedelta(minutes=3) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
 
-    def test_schedule_war(self):
-        start = self.now + datetime.timedelta(minutes=5) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
-        end = self.now + datetime.timedelta(minutes=9) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+    def test_war(self):
+        phenny = DummyPhenny()
+        phenny.expected_start = self.start
+        phenny.expected_end = self.end
 
-        war_data = nanowars._schedule_war(self.phenny, start=start.strftime('%s'), end=end.strftime('%s'))
-        expected_data = {'id': 1, 'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')}
+        def say(self, what):
+            print what
+            if 'START' in what:
+                assert self.expected_start.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
+            elif 'END' in what:
+                assert self.expected_end.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
+            else:
+                assert True == False, 'Expected START or END in %s' % what
+
+        phenny.say = types.MethodType(say, phenny)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        with assertMethodIsCalled(phenny, 'say'):
+            nanowars.war(phenny, inputobj)
+
+    def test_schedule_war(self):
+
+        war_data = nanowars._schedule_war(start=self.start.strftime('%s'), end=self.end.strftime('%s'))
+        expected_data = {'id': 1, 'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')}
         assert war_data == expected_data, 'War data should be %s, not %s' % (expected_data, war_data)
 
         result = HelperFunctions().call_django('/api/war/planned/')
         lines = '\n'.join(result.readlines())
         planned_wars = json.loads(lines)
 
-        expected_response = [{'id': 1, 'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')}]
+        expected_response = [{'id': 1, 'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')}]
 
         assert planned_wars == expected_response, 'Planned wars is %s, not %s' % (planned_wars, expected_response)
 

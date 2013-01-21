@@ -5,13 +5,14 @@ import json
 import urllib
 import urllib2
 import datetime
+from threading import Timer
 
 #djangoUrl = 'http://phenny.venefyxatu.be/'
 djangoUrl = 'http://localhost:8000/'
 action = chr(1) + 'ACTION '
 
 
-def _schedule_war(phenny, start, end):
+def _schedule_war(start, end):
     result = _call_django('api/war/new/', 'POST', {'starttime': start, 'endtime': end})
 
     lines = '\n'.join(result.readlines())
@@ -70,8 +71,14 @@ def war(phenny, input):
     Time een war
     """
     planning_hour = datetime.datetime.now()
+    args = input.group(2)
+    start, end = args.split()
     start, end = _convert_to_epoch(start, end, planning_hour)
-    _schedule_war(start, end)
+    result = _schedule_war(start, end)
+    wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
+    t = Timer(wait, phenny.say, ['START war %s' % result['id']])
+    t.start()
+
 
 war.commands = ['war']
 war.example = '.war 15:50 16:00'
