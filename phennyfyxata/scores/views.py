@@ -176,7 +176,7 @@ def singleWarInfo(request, war_id):
     except ObjectDoesNotExist:
         raise Http404
 
-    info = "{'start': '%s', 'end': '%s'}" % (war.starttime, war.endtime)
+    info = "{'starttime': '%s', 'endtime': '%s'}" % (war.starttime, war.endtime)
     return HttpResponse(info)
 
 
@@ -242,10 +242,15 @@ def createWar(request):
         starttime = request.POST['starttime']
         logging.log(logging.INFO, "Start time is %s (type %s)" % (starttime, type(starttime)))
         logging.log(logging.INFO, "End time is %s (type %s)" % (endtime, type(endtime)))
-        war = War.objects.create(starttime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(starttime))), endtime=time.strftime("%Y-%m-%d %H:%M", time.localtime(float(endtime))))
+        war = War.objects.create(starttime=datetime.datetime.fromtimestamp(float(starttime)).strftime("%Y-%m-%d %H:%M"),
+                                 endtime=datetime.datetime.fromtimestamp(float(endtime)).strftime("%Y-%m-%d %H:%M"))
+        war.save()
+        logging.log(logging.INFO, war.endtime)
         logging.log(logging.INFO, "Created war")
-        html = str(war.id)
-        return HttpResponse(html)
+        war_data = {'id': war.id,
+                    'starttime': datetime.datetime.strptime(war.starttime, '%Y-%m-%d %H:%M').strftime('%s'),
+                    'endtime': datetime.datetime.strptime(war.endtime, '%Y-%m-%d %H:%M').strftime('%s')}
+        return HttpResponse(json.dumps(war_data))
     raise Http404
 
 
@@ -257,7 +262,7 @@ def activeWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(starttime__lt=now, endtime__gt=now)
-    wars_list = [{'id': war.id, 'start': war.starttime.strftime('%s'), 'end': war.endtime.strftime('%s')} for war in wars]
+    wars_list = [{'id': war.id, 'starttime': war.starttime.strftime('%s'), 'endtime': war.endtime.strftime('%s')} for war in wars]
     return HttpResponse(json.dumps(wars_list))
 
 
@@ -266,5 +271,5 @@ def plannedWars(request):
     now_time = time.localtime()
     now = datetime.datetime(now_time[0], now_time[1], now_time[2], now_time[3], now_time[4], now_time[5])
     wars = War.objects.filter(starttime__gt=now)
-    wars_list = [{'id': war.id, 'start': war.starttime.strftime('%s'), 'end': war.endtime.strftime('%s')} for war in wars]
+    wars_list = [{'id': war.id, 'starttime': war.starttime.strftime('%s'), 'endtime': war.endtime.strftime('%s')} for war in wars]
     return HttpResponse(json.dumps(wars_list))
