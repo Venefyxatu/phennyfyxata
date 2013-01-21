@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import json
 import urllib
 import urllib2
 import datetime
 
-djangoUrl = 'http://phenny.venefyxatu.be/'
+#djangoUrl = 'http://phenny.venefyxatu.be/'
+djangoUrl = 'http://localhost:8000/'
 action = chr(1) + 'ACTION '
+
+
+def _schedule_war(phenny, start, end, planning_hour):
+    start, end = _convert_to_epoch(start, end, planning_hour)
+    result = _call_django('api/war/new/', 'POST', {'starttime': start, 'endtime': end})
+
+    lines = '\n'.join(result.readlines())
+    return json.loads(lines)
 
 
 def _convert_to_epoch(start, end, planning_hour):

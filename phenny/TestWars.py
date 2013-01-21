@@ -1,7 +1,56 @@
+import json
+import urllib
+import urllib2
 import nanowars
+import commands
 import datetime
 
 from unittest import TestCase
+
+
+class HelperFunctions:
+
+    def call_django(self, location, method='GET', urldata=None):
+        method = method in ['GET', 'POST'] and method or 'GET'
+        url = 'http://localhost:8000%s' % location
+
+        if urldata:
+            urldata = urllib.urlencode(urldata)
+
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(url, data=urldata)
+        request.add_header('Content-Type', 'text/http')
+        request.get_method = lambda: method
+        result = opener.open(request)
+        return result
+
+
+class DummyPhenny:
+    def say(self, say_what):
+        return say_what
+
+
+class WarTest(TestCase):
+    def setUp(self):
+        self.phenny = DummyPhenny()
+        self.now = datetime.datetime.now()
+        commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+
+    def test_schedule_war(self):
+        start = self.now + datetime.timedelta(minutes=5) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        end = self.now + datetime.timedelta(minutes=9) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+
+        war_data = nanowars._schedule_war(self.phenny, start=start.strftime('%H:%M'), end=end.strftime('%H:%M'), planning_hour=self.now)
+        expected_data = {'id': 1, 'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')}
+        assert war_data == expected_data, 'War data should be %s, not %s' % (expected_data, war_data)
+
+        result = HelperFunctions().call_django('/api/war/planned/')
+        lines = '\n'.join(result.readlines())
+        planned_wars = json.loads(lines)
+
+        expected_response = [{'id': 1, 'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')}]
+
+        assert planned_wars == expected_response, 'Planned wars is %s, not %s' % (planned_wars, expected_response)
 
 
 class TimeTest(TestCase):
