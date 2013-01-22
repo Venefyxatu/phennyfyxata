@@ -147,7 +147,7 @@ class WarTests(TestCase):
 
         response = self.c.get('/api/war/active/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        expected_response = [{'id': 1, 'start': starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
+        expected_response = [{'id': 1, 'starttime': starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')}]
         assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
 
     def test_planned_wars(self):
@@ -156,7 +156,7 @@ class WarTests(TestCase):
 
         response = self.c.get('/api/war/planned/')
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
-        expected_response = [{'id': 1, 'start': self.starttime.strftime('%s'), 'end': self.endtime.strftime('%s')}]
+        expected_response = [{'id': 1, 'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')}]
         assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
 
     def test_no_planned_wars(self):
