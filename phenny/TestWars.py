@@ -1,6 +1,5 @@
 import time
 import json
-import types
 import urllib
 import urllib2
 import nanowars
@@ -27,66 +26,29 @@ class HelperFunctions:
         return result
 
 
-class assertMethodIsCalledTwice(object):
-    def __init__(self, obj, method):
-        self.obj = obj
-        self.method = method
-
-    def called(self, *args, **kwargs):
-        if self.method_called:
-            self.method_called_again = True
-        self.method_called = True
-        self.orig_method(*args, **kwargs)
-
-    def __enter__(self):
-        self.orig_method = getattr(self.obj, self.method)
-        setattr(self.obj, self.method, self.called)
-        self.method_called = False
-        self.method_called_verified = False
-        self.method_called_again_verified = False
-        self.method_called_again = False
-
-    def _verify_called(self, traceback, again):
-        assert getattr(self.obj, self.method) == self.called, "method %s was modified during assertMethodIsCalled" % self.method
-
-        if again:
-            setattr(self.obj, self.method, self.orig_method)
-
-        # If an exception was thrown within the block, we've already failed.
-        if traceback is None:
-            if not again:
-                assert self.method_called, "method %s of %s was not called" % (self.method, self.obj)
-            else:
-                assert self.method_called_again, "method %s of %s was not called a second time" % (self.method, self.obj)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        expected_start = int(self.obj.expected_start.strftime('%s'))
-        now = int(datetime.datetime.now().strftime('%s'))
-        if expected_start > now:
-            time.sleep(expected_start - now + 2)
-
-        self._verify_called(traceback, again=False)
-
-        if self.method_called_verified == True:
-            self.method_called_again_verified = True
-        self.method_called_verified = True
-
-        expected_end = int(self.obj.expected_end.strftime('%s'))
-        now = int(datetime.datetime.now().strftime('%s'))
-
-        if expected_end > now:
-            time.sleep(expected_end - now + 2)
-
-        self._verify_called(traceback, again=True)
-
-
 class DummyPhenny:
-    def say(self, say_what):
-        return say_what
+    def __init__(self, expected_start, expected_end):
+        self.said = []
+        self.expected_start = expected_start
+        self.expected_end = expected_end
+
+    def say(self, what):
+        self.said.append(what)
+        if 'START' in what:
+            assert self.expected_start.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
+        elif 'STOP' in what:
+            assert self.expected_end.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
+        elif what == '3':
+            assert (self.expected_start - datetime.timedelta(seconds=3)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "3" to come 3 seconds before %s, not %s' % (self.expected_start.strftime('%H:%M:%S'), int(datetime.datetime.now().strftime('%s')) - int(self.expected_start.strftime('%s')))
+        elif what == '2':
+            assert (self.expected_start - datetime.timedelta(seconds=2)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "2" to come 2 seconds before %s' % self.expected_start.strftime('%H:%M:%S')
+        elif what == '1':
+            assert (self.expected_start - datetime.timedelta(seconds=1)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "1" to come 1 seconds before %s' % self.expected_start.strftime('%H:%M:%S')
 
 
 class DummyInput:
-    properties = [None]
+    def __init__(self):
+        self.properties = [None]
 
     def group(self, index):
         return self.properties[index]
@@ -100,26 +62,68 @@ class WarTest(TestCase):
         commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
 
     def test_war(self):
-        phenny = DummyPhenny()
-        phenny.expected_start = self.start
-        phenny.expected_end = self.end
-
-        def say(self, what):
-            print what
-            if 'START' in what:
-                assert self.expected_start.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
-            elif 'END' in what:
-                assert self.expected_end.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
-            else:
-                assert True == False, 'Expected START or END in %s' % what
-
-        phenny.say = types.MethodType(say, phenny)
+        phenny = DummyPhenny(self.start, self.end)
 
         inputobj = DummyInput()
         inputobj.properties.append('war')
         inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
-        with assertMethodIsCalledTwice(phenny, 'say'):
-            nanowars.war(phenny, inputobj)
+        nanowars.war(phenny, inputobj)
+        time_to_wait = int(self.end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+        duration = (self.end - self.start).seconds / 60
+        assert 'START war 1 (van %s tot %s, %s %s dus)' % (self.start.strftime('%H:%M'),
+                self.end.strftime('%H:%M'),
+                duration,
+                'minuut' if duration == 1 else 'minuten') in phenny.said, 'phenny.say was not called with START'
+        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
+        assert '3' in phenny.said, 'phenny.say was not called with 3'
+        assert '2' in phenny.said, 'phenny.say was not called with 2'
+        assert '1' in phenny.said, 'phenny.say was not called with 1'
+        assert 'War 1 is voorbij. Je kan je score registreren met .score 1 <score>' in phenny.said, 'phenny did not say how to register score'
+        assert 'Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/1/overview/' in phenny.said, 'phenny did not say where to find the score list'
+
+    def test_two_wars_last_planned_first(self):
+        phenny = DummyPhenny(self.start, self.end)
+
+        phenny2 = DummyPhenny(self.start + datetime.timedelta(minutes=2), self.end + datetime.timedelta(minutes=2))
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+
+        inputobj2 = DummyInput()
+        inputobj2.properties.append('war')
+        inputobj2.properties.append('%s %s' % (phenny2.expected_start.strftime('%H:%M'), phenny2.expected_end.strftime('%H:%M')))
+
+        nanowars.war(phenny2, inputobj2)
+        nanowars.war(phenny, inputobj)
+
+        time_to_wait = int(phenny2.expected_end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        duration = (self.end - self.start).seconds / 60
+        assert 'START war 2 (van %s tot %s, %s %s dus)' % (self.start.strftime('%H:%M'),
+                self.end.strftime('%H:%M'),
+                duration,
+                'minuut' if duration == 1 else 'minuten') in phenny.said, 'phenny.say was not called with START'
+        assert len(filter(lambda x: x.startswith('War 2: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
+        assert '3' in phenny.said, 'phenny.say was not called with 3'
+        assert '2' in phenny.said, 'phenny.say was not called with 2'
+        assert '1' in phenny.said, 'phenny.say was not called with 1'
+        assert 'War 2 is voorbij. Je kan je score registreren met .score 2 <score>' in phenny.said, 'phenny did not say how to register score'
+        assert 'Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/2/overview/' in phenny.said, 'phenny did not say where to find the score list'
+
+        duration = (phenny2.expected_end - phenny2.expected_start).seconds / 60
+        assert 'START war 1 (van %s tot %s, %s %s dus)' % (phenny2.expected_start.strftime('%H:%M'),
+                phenny2.expected_end.strftime('%H:%M'),
+                duration,
+                'minuut' if duration == 1 else 'minuten') in phenny2.said, 'phenny2.say was not called with START'
+        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny2.said)) > 0, 'phenny2.say was not called with STOP'
+        assert '3' in phenny2.said, 'phenny2.say was not called with 3'
+        assert '2' in phenny2.said, 'phenny2.say was not called with 2'
+        assert '1' in phenny2.said, 'phenny2.say was not called with 1'
+        assert 'War 1 is voorbij. Je kan je score registreren met .score 1 <score>' in phenny2.said, 'phenny2 did not say how to register score'
+        assert 'Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/1/overview/' in phenny2.said, 'phenny2 did not say where to find the score list'
 
     def test_schedule_war(self):
 

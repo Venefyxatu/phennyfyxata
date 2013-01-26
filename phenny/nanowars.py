@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import json
+import random
 import urllib
 import urllib2
 import datetime
@@ -10,6 +11,12 @@ from threading import Timer
 #djangoUrl = 'http://phenny.venefyxatu.be/'
 djangoUrl = 'http://localhost:8000/'
 action = chr(1) + 'ACTION '
+
+STOPQUOTES = ['Hammertime!',
+              'Hamertijd!',
+              'In the name of love!',
+              'In the name of fluffy little bunnies!',
+              'Drop! Roll!']
 
 
 def _schedule_war(start, end):
@@ -76,11 +83,29 @@ def war(phenny, input):
     start, end = _convert_to_epoch(start, end, planning_hour)
     result = _schedule_war(start, end)
     wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
-    t = Timer(wait, phenny.say, ['START war %s' % result['id']])
+    for x in xrange(3, 0, -1):
+        t = Timer(wait - x, phenny.say, [str(x)])
+        t.start()
+
+    start_dt = datetime.datetime.fromtimestamp(int(start))
+    end_dt = datetime.datetime.fromtimestamp(int(end))
+    start_human = start_dt.strftime('%H:%M')
+    end_human = end_dt.strftime('%H:%M')
+    duration_human = (end_dt - start_dt).seconds / 60
+    t = Timer(wait,
+              phenny.say, ['START war %s (van %s tot %s, %s %s dus)' % (result['id'],
+                                                            start_human,
+                                                            end_human,
+                                                            duration_human,
+                                                            'minuut' if duration_human == 1 else 'minuten')])
     t.start()
     wait_end = int(int(result['endtime']) - int(datetime.datetime.now().strftime('%s')))
-    t_end = Timer(wait_end, phenny.say, ['END war %s' % result['id']])
+    t_end = Timer(wait_end, phenny.say, ['War %s: STOP - %s' % (result['id'], random.choice(STOPQUOTES))])
     t_end.start()
+    t_score = Timer(wait_end + 2, phenny.say, ['War %s is voorbij. Je kan je score registreren met .score %s <score>' % (result['id'], result['id'])])
+    t_score.start()
+    t_deelnemers = Timer(wait_end + 3, phenny.say, ['Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/%s/overview/' % result['id']])
+    t_deelnemers.start()
 
 
 war.commands = ['war']
