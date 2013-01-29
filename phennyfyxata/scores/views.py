@@ -63,9 +63,11 @@ def registerScore(request):
 
         logging.log(logging.INFO, "Score is %s. War ID is %s" % (score, warId))
 
-        war, warCreated = War.objects.get_or_create(id=warId)
-        if warCreated:
-            war.save()
+        wars = War.objects.filter(id=warId)
+        if len(wars) != 1:
+            raise Http404('War %s does not exist.' % warId)
+
+        war = wars[0]
 
         ps, psCreated = ParticipantScore.objects.get_or_create(writer=writer, war=war)
         ps.score = score
@@ -170,14 +172,18 @@ def documentationDutch(request):
     return render_to_response('scores/documentation.nl.html')
 
 
-def singleWarInfo(request, war_id):
-    try:
-        war = War.objects.get(id=war_id)
-    except ObjectDoesNotExist:
-        raise Http404
+def singleWarInfo(request):
+    if request.method == 'POST':
+        war_id = request.POST['id']
+        try:
+            war = War.objects.get(id=war_id)
+        except ObjectDoesNotExist:
+            raise Http404('That war does not exist')
 
-    info = "{'starttime': '%s', 'endtime': '%s'}" % (war.starttime, war.endtime)
-    return HttpResponse(info)
+        info = json.dumps({'id': war_id, 'starttime': war.starttime.strftime('%s'), 'endtime': war.endtime.strftime('%s')})
+        return HttpResponse(info)
+    else:
+        raise Http404()
 
 
 def singleWarOverview(request, war_id):

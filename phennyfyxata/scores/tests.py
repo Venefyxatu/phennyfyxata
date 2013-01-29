@@ -126,6 +126,17 @@ class WarTests(TestCase):
         self.endtime = self.starttime + datetime.timedelta(0, seconds=600)
         self.endtime = self.endtime - datetime.timedelta(0, seconds=self.endtime.second, microseconds=self.endtime.microsecond)
 
+    def test_war_info(self):
+        response = self.c.post('/api/war/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        response = self.c.post('/api/war/info/', {'id': 1})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        expected_response = {'id': '1', 'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')}
+
+        assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
+
     def test_create_war(self):
         response = self.c.post('/api/war/new/', {'starttime': self.starttime.strftime('%s'), 'endtime': self.endtime.strftime('%s')})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
