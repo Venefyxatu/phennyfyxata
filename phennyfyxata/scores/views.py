@@ -233,6 +233,33 @@ def listWarParticipants(request, war_id):
     return HttpResponse(json.dumps([participant.participant.nick for participant in participants]))
 
 
+def getParticipantScoreForWar(request):
+    logging.log(logging.INFO, "Getting participant score for war")
+
+    if request.method == 'POST':
+        logging.log(logging.INFO, 'POST method found in getParticipantScoreForWar')
+
+        war_id = request.POST['war']
+        writer_nick = request.POST['writer']
+
+        wars = War.objects.filter(id=war_id)
+        writers = Writer.objects.filter(nick=writer_nick)
+
+        if len(wars) != 1 or len(writers) != 1:
+            raise Http404('Writer %s did not register a score for war %s' % (writer_nick, war_id))
+
+        war = wars[0]
+        writer = writers[0]
+
+        logging.log(logging.INFO, "War is %s" % war)
+        logging.log(logging.INFO, "Writer is %s" % writer)
+
+        ps = ParticipantScore.objects.get(writer=writer, war=war)
+
+        result = {'score': ps.score, 'writer': writer_nick, 'war': war_id}
+    return HttpResponse(json.dumps(result))
+
+
 def createWar(request):
     logging.log(logging.INFO, "Creating a new war")
     if request.method == 'POST':

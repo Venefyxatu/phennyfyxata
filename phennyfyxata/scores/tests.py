@@ -177,6 +177,17 @@ class ScoreTests(TestCase):
         self.writer.save()
         self.c = Client()
 
+    def test_get_score_for_war(self):
+        response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 200, 'war': self.war.id})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        response = self.c.post('/api/writer/getscore/', {'writer': self.writer.nick, 'war': self.war.id})
+        assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
+
+        expected_response = {'war': str(self.war.id), 'writer': self.writer.nick, 'score': 200}
+
+        assert json.loads(response.content) == expected_response, 'Response should be %s, not %s' % (expected_response, json.loads(response.content))
+
     def test_register_score(self):
         response = self.c.post('/api/score/register/', {'writer': self.writer.nick, 'score': 200, 'war': self.war.id})
 
