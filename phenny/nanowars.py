@@ -115,21 +115,40 @@ war.commands = ['war']
 war.example = '.war 15:50 16:00'
 
 
-def warsoverview(phenny, input):
-    """ Geef een overzicht van de actieve wars
-    """
-    result = _call_django('wars/%s' % input[1:-4])
-    wars = result.read()
-    if not wars:
-        if input == '.plannedwars':
-            phenny.say('Er zijn geen wars gepland')
-        else:
-            phenny.say('Er zijn geen wars bezig')
-    wars = wars.split(',')
-    for war in wars:
-        phenny.say(war)
+def plannedwars(phenny, input):
+    ''' Geef een overzicht van de geplande wars '''
+    result = _call_django('api/war/planned/', 'GET')
+    lines = '\n'.join(result.readlines())
+    plannedwars = json.loads(lines)
+    if plannedwars:
+        phenny.say('Deze wars zijn nog gepland:')
+        for plannedwar in plannedwars:
+            start = datetime.datetime.fromtimestamp(int(plannedwar['starttime']))
+            end = datetime.datetime.fromtimestamp(int(plannedwar['endtime']))
+            delta = (end - start).seconds / 60
+            phenny.say('War %s: van %s tot %s (%s minuten dus)' % (plannedwar['id'], start.strftime('%H:%M'), end.strftime('%H:%M'), delta))
+    else:
+        phenny.say('Er zijn geen wars gepland.')
 
-warsoverview.commands = ['activewars', 'plannedwars']
+plannedwars.commands = ['plannedwars']
+
+
+def activewars(phenny, input):
+    ''' Geef een overzicht van de actieve wars '''
+    result = _call_django('api/war/active/', 'GET')
+    lines = '\n'.join(result.readlines())
+    plannedwars = json.loads(lines)
+    if plannedwars:
+        phenny.say('Deze wars zijn bezig:')
+        for plannedwar in plannedwars:
+            start = datetime.datetime.fromtimestamp(int(plannedwar['starttime']))
+            end = datetime.datetime.fromtimestamp(int(plannedwar['endtime']))
+            delta = (end - start).seconds / 60
+            phenny.say('War %s: van %s tot %s (%s minuten dus)' % (plannedwar['id'], start.strftime('%H:%M'), end.strftime('%H:%M'), delta))
+    else:
+        phenny.say('Er zijn geen wars bezig.')
+
+activewars.commands = ['activewars']
 
 
 def score(phenny, input):

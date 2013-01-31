@@ -275,6 +275,80 @@ class ScoreTest(TestCase):
         assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
 
 
+class InfoTest(TestCase):
+    def setUp(self):
+        commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+        self.nick = 'Testie'
+
+    def test_no_planned_wars(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('plannedwars')
+
+        nanowars.plannedwars(phenny, inputobj)
+
+        expected_said = 'Er zijn geen wars gepland.'
+
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+
+    def test_planned_wars(self):
+        start = datetime.datetime.now() + datetime.timedelta(minutes=5)
+        end = datetime.datetime.now() + datetime.timedelta(minutes=10)
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+        wardata = json.loads(lines)
+
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('plannedwars')
+
+        nanowars.plannedwars(phenny, inputobj)
+
+        starttime = int(wardata['starttime'])
+        endtime = int(wardata['endtime'])
+        delta = (endtime - starttime) / 60
+        expected_said = ['Deze wars zijn nog gepland:',
+                'War %s: van %s tot %s (%s minuten dus)' % (wardata['id'], datetime.datetime.fromtimestamp(starttime).strftime('%H:%M'),
+                    datetime.datetime.fromtimestamp(endtime).strftime('%H:%M'), delta)]
+
+        for expected in expected_said:
+            assert expected in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected, '\n'.join(phenny.said))
+
+    def test_no_active_wars(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('activewars')
+
+        nanowars.activewars(phenny, inputobj)
+
+        expected_said = 'Er zijn geen wars bezig.'
+
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+
+    def test_active_wars(self):
+        start = datetime.datetime.now() - datetime.timedelta(minutes=5)
+        end = datetime.datetime.now() + datetime.timedelta(minutes=10)
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+        wardata = json.loads(lines)
+
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('plannedwars')
+
+        nanowars.activewars(phenny, inputobj)
+
+        starttime = int(wardata['starttime'])
+        endtime = int(wardata['endtime'])
+        delta = (endtime - starttime) / 60
+        expected_said = ['Deze wars zijn bezig:',
+                'War %s: van %s tot %s (%s minuten dus)' % (wardata['id'], datetime.datetime.fromtimestamp(starttime).strftime('%H:%M'),
+                    datetime.datetime.fromtimestamp(endtime).strftime('%H:%M'), delta)]
+
+        for expected in expected_said:
+            assert expected in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected, '\n'.join(phenny.said))
+
+
 class TimeTest(TestCase):
     def shortDescription(self):
         ''' Hack to prevent docstring from being used with nosetests -v
