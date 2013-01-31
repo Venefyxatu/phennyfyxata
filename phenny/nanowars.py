@@ -69,7 +69,10 @@ def _call_django(location, method='GET', urldata=None):
     request = urllib2.Request(url, data=urldata)
     request.add_header('Content-Type', 'text/http')
     request.get_method = lambda: method
-    result = opener.open(request)
+    try:
+        result = opener.open(request)
+    except urllib2.HTTPError, e:
+        return e
     return result
 
 
@@ -130,37 +133,36 @@ warsoverview.commands = ['activewars', 'plannedwars']
 
 
 def score(phenny, input):
-    """
-    Registreer je score
-    """
-
-    params = input.group(2).split(' ')
+    writer_nick = input.nick
+    values = input.group(2).split()
     try:
-        war_id = int(params[0])
-        score = int(params[1])
+        war_id = int(values[0])
+        score = int(values[1])
+        sure = True if len(values) == 3 and values[2] == 'zeker' else False
     except ValueError:
-        phenny.say("Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score" % input.nick)
+        phenny.say('Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % writer_nick)
         return
-    confirm = False
-    if len(params) == 3 and params[2].lower() == 'zeker':
-        confirm = True
-    try:
-        result = _call_django('wars/%s/info/' % war_id, 'GET')
-    except urllib2.HTTPError:
-        phenny.say('Die war ken ik niet, %s' % input.nick)
+
+    result = _call_django('api/war/info/', 'POST', {'id': war_id})
+
+    if type(result) == urllib2.HTTPError:
+        phenny.say('Die war ken ik niet, %s' % writer_nick)
         return
-    war_info = result.read()
-    war_info = eval(war_info)
-    war_end_delta = datetime.datetime.now() - datetime.datetime.strptime(war_info['end'], '%Y-%m-%d %H:%M:%S')
-    if war_end_delta.days >= 1 and not confirm:
-        phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
-        return
-    result = _call_django('writers/%s/registerscore/' % input.nick, 'POST', {'score': score, 'war': war_id})
-    if result.msg == 'OK':
-        if score == 0:
-            phenny.say('Ik heb je score voor war %s verwijderd, %s.' % (war_id, input.nick))
-        else:
-            phenny.say('Score %s staat genoteerd voor war %s, %s.' % (score, war_id, input.nick))
+    else:
+        war_info = json.loads(result.read())
+        if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
+            phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
+
+    if score == 0:
+        result = _call_django('api/score/deregister/', 'POST', {'writer': writer_nick, 'war': war_id})
+    else:
+        result = _call_django('api/score/register/', 'POST', {'writer': writer_nick, 'score': score, 'war': war_id})
+
+    res = result.read()
+    if res == 'OK' and score == 0:
+        phenny.say('Ik heb je score voor war %s verwijderd, %s.' % (war_id, writer_nick))
+    elif res == 'OK':
+        phenny.say('Score %s staat genoteerd voor war %s, %s.' % (score, war_id, writer_nick))
 
 score.commands = ['score']
 score.example = '.score 1 2003'

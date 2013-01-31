@@ -27,28 +27,22 @@ class HelperFunctions:
 
 
 class DummyPhenny:
-    def __init__(self, expected_start, expected_end):
+    def __init__(self, expected_start=None, expected_end=None):
         self.said = []
         self.expected_start = expected_start
         self.expected_end = expected_end
+        self.expected_score = None
+        self.expected_war_id = None
+        self.expected_nick = None
 
     def say(self, what):
         self.said.append(what)
-        if 'START' in what:
-            assert self.expected_start.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
-        elif 'STOP' in what:
-            assert self.expected_end.strftime('%H:%M') == datetime.datetime.now().strftime('%H:%M')
-        elif what == '3':
-            assert (self.expected_start - datetime.timedelta(seconds=3)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "3" to come 3 seconds before %s, not %s' % (self.expected_start.strftime('%H:%M:%S'), int(datetime.datetime.now().strftime('%s')) - int(self.expected_start.strftime('%s')))
-        elif what == '2':
-            assert (self.expected_start - datetime.timedelta(seconds=2)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "2" to come 2 seconds before %s' % self.expected_start.strftime('%H:%M:%S')
-        elif what == '1':
-            assert (self.expected_start - datetime.timedelta(seconds=1)).strftime('%s') == datetime.datetime.now().strftime('%s'), 'Expected "1" to come 1 seconds before %s' % self.expected_start.strftime('%H:%M:%S')
 
 
 class DummyInput:
-    def __init__(self):
+    def __init__(self, nick=None):
         self.properties = [None]
+        self.nick = nick if nick else 'Testie'
 
     def group(self, index):
         return self.properties[index]
@@ -138,6 +132,147 @@ class WarTest(TestCase):
         expected_response = [{'id': 1, 'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')}]
 
         assert planned_wars == expected_response, 'Planned wars is %s, not %s' % (planned_wars, expected_response)
+
+
+class ScoreTest(TestCase):
+    def setUp(self):
+        commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+        self.start = datetime.datetime.now() - datetime.timedelta(minutes=10)
+        self.end = datetime.datetime.now() - datetime.timedelta(minutes=5)
+
+        self.nick = 'testie'
+
+    def test_register_score(self):
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+
+        self.war = json.loads(lines)
+
+        phenny = DummyPhenny()
+
+        phenny.expected_score = 200
+        phenny.expected_war_id = self.war['id']
+        phenny.expected_nick = self.nick
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('%s 200' % self.war['id'])
+
+        nanowars.score(phenny, inputobj)
+
+        result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
+
+        lines = '\n'.join(result.readlines())
+
+        scoredata = json.loads(lines)
+
+        expected_response = {'writer': self.nick, 'war': str(self.war['id']), 'score': 200}
+
+        assert scoredata == expected_response, 'Response should be %s, not %s' % (expected_response, scoredata)
+
+        expected_say = 'Score %s staat genoteerd voor war %s, %s.' % (phenny.expected_score, phenny.expected_war_id, phenny.expected_nick)
+        assert expected_say in phenny.said, 'Expected %s in phenny.said, instead she said: %s' % (expected_say, '\n'.join(phenny.said))
+
+    def test_register_score_nonexisting_war(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('999 200')
+        nanowars.score(phenny, inputobj)
+
+        assert 'Die war ken ik niet, %s' % self.nick in phenny.said
+
+    def test_invalid_data(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('abc def')
+
+        nanowars.score(phenny, inputobj)
+
+        assert 'Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % self.nick in phenny.said, 'Phenny did not say what was wrong, instead she said: %s' % '\n'.join(phenny.said)
+
+    def test_score_old_war(self):
+        start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
+        end = datetime.datetime.now() - datetime.timedelta(days=1, minutes=5)
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+
+        self.war = json.loads(lines)
+
+        phenny = DummyPhenny()
+
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('%s 200' % self.war['id'])
+
+        nanowars.score(phenny, inputobj)
+
+        expected_said = 'Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (self.war['id'], 200)
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+
+    def test_score_old_war_certain(self):
+        start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
+        end = datetime.datetime.now() - datetime.timedelta(days=1, minutes=5)
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+
+        self.war = json.loads(lines)
+
+        phenny = DummyPhenny()
+        phenny.expected_score = 200
+        phenny.expected_war_id = self.war['id']
+        phenny.expected_nick = self.nick
+
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('%s 200 zeker' % self.war['id'])
+
+        nanowars.score(phenny, inputobj)
+
+        expected_say = 'Score %s staat genoteerd voor war %s, %s.' % (phenny.expected_score, phenny.expected_war_id, phenny.expected_nick)
+        assert expected_say in phenny.said, 'Expected %s in phenny.said, instead she said: %s' % (expected_say, '\n'.join(phenny.said))
+
+    def test_unregister_score(self):
+        result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')})
+        lines = '\n'.join(result.readlines())
+
+        self.war = json.loads(lines)
+
+        phenny = DummyPhenny()
+        phenny.expected_score = 200
+        phenny.expected_war_id = self.war['id']
+        phenny.expected_nick = self.nick
+
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('%s 200' % self.war['id'])
+        nanowars.score(phenny, inputobj)
+
+        result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
+
+        lines = '\n'.join(result.readlines())
+
+        scoredata = json.loads(lines)
+
+        expected_response = {'writer': self.nick, 'war': str(self.war['id']), 'score': 200}
+
+        assert scoredata == expected_response, 'Response should be %s, not %s' % (expected_response, scoredata)
+
+        expected_say = 'Score %s staat genoteerd voor war %s, %s.' % (phenny.expected_score, phenny.expected_war_id, phenny.expected_nick)
+        assert expected_say in phenny.said
+
+        phenny = DummyPhenny()
+        phenny.expected_war_id = self.war['id']
+        phenny.expected_nick = self.nick
+
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('%s 0' % self.war['id'])
+        nanowars.score(phenny, inputobj)
+
+        expected_said = 'Ik heb je score voor war %s verwijderd, %s.' % (self.war['id'], self.nick)
+
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
 
 
 class TimeTest(TestCase):

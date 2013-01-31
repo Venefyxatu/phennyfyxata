@@ -178,9 +178,11 @@ def singleWarInfo(request):
         try:
             war = War.objects.get(id=war_id)
         except ObjectDoesNotExist:
+            logging.log(logging.INFO, 'War %s does not exist' % war_id)
             raise Http404('That war does not exist')
 
         info = json.dumps({'id': war_id, 'starttime': war.starttime.strftime('%s'), 'endtime': war.endtime.strftime('%s')})
+        logging.log(logging.INFO, 'Returning %s' % info)
         return HttpResponse(info)
     else:
         raise Http404()
