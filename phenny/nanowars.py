@@ -4,8 +4,7 @@
 import re
 import json
 import random
-import urllib
-import urllib2
+import requests
 import datetime
 from threading import Timer
 
@@ -29,8 +28,7 @@ class WarTooLongError(Exception):
 def _schedule_war(start, end):
     result = _call_django('api/war/new/', 'POST', {'starttime': start, 'endtime': end})
 
-    lines = '\n'.join(result.readlines())
-    return json.loads(lines)
+    return json.loads(result.content)
 
 
 def _convert_to_epoch(start, end, planning_hour):
@@ -68,25 +66,17 @@ def _check_and_add_day(start, end, planning_hour):
 def _call_django(location, method='GET', urldata=None):
     method = method in ['GET', 'POST'] and method or 'GET'
     url = djangoUrl + location
+    if method == 'GET':
+        result = requests.get(url)
+    elif method == 'POST':
+        result = requests.post(url, urldata)
 
-    if urldata:
-        urldata = urllib.urlencode(urldata)
-
-    opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(url, data=urldata)
-    request.add_header('Content-Type', 'text/http')
-    request.get_method = lambda: method
-    try:
-        result = opener.open(request)
-    except urllib2.HTTPError, e:
-        return e
     return result
 
 
 def _get_war_info(path):
     result = _call_django(path, 'GET')
-    lines = '\n'.join(result.readlines())
-    wars = json.loads(lines)
+    wars = json.loads(result.content)
     return wars
 
 
@@ -190,11 +180,11 @@ def score(phenny, input):
 
     result = _call_django('api/war/info/', 'POST', {'id': war_id})
 
-    if type(result) == urllib2.HTTPError:
+    if result.status_code == 404:
         phenny.say('Die war ken ik niet, %s' % writer_nick)
         return
     else:
-        war_info = json.loads(result.read())
+        war_info = json.loads(result.content)
         if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
             phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
             return
@@ -204,7 +194,7 @@ def score(phenny, input):
     else:
         result = _call_django('api/score/register/', 'POST', {'writer': writer_nick, 'score': score, 'war': war_id})
 
-    res = result.read()
+    res = result.content
     if res == 'OK' and score == 0:
         phenny.say('Ik heb je score voor war %s verwijderd, %s.' % (war_id, writer_nick))
     elif res == 'OK':

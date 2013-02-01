@@ -1,7 +1,6 @@
 import time
 import json
-import urllib
-import urllib2
+import requests
 import nanowars
 import commands
 import datetime
@@ -15,15 +14,11 @@ class HelperFunctions:
     def call_django(self, location, method='GET', urldata=None):
         method = method in ['GET', 'POST'] and method or 'GET'
         url = 'http://localhost:8000%s' % location
+        if method == 'GET':
+            result = requests.get(url)
+        elif method == 'POST':
+            result = requests.post(url, urldata)
 
-        if urldata:
-            urldata = urllib.urlencode(urldata)
-
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        request = urllib2.Request(url, data=urldata)
-        request.add_header('Content-Type', 'text/http')
-        request.get_method = lambda: method
-        result = opener.open(request)
         return result
 
 
@@ -190,8 +185,7 @@ class WarTest(TestCase):
         assert war_data == expected_data, 'War data should be %s, not %s' % (expected_data, war_data)
 
         result = HelperFunctions().call_django('/api/war/planned/')
-        lines = '\n'.join(result.readlines())
-        planned_wars = json.loads(lines)
+        planned_wars = json.loads(result.content)
 
         expected_response = [{'id': 1, 'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')}]
 
@@ -208,9 +202,7 @@ class ScoreTest(TestCase):
 
     def test_register_score(self):
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-
-        self.war = json.loads(lines)
+        self.war = json.loads(result.content)
 
         phenny = DummyPhenny()
 
@@ -224,10 +216,7 @@ class ScoreTest(TestCase):
         nanowars.score(phenny, inputobj)
 
         result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
-
-        lines = '\n'.join(result.readlines())
-
-        scoredata = json.loads(lines)
+        scoredata = json.loads(result.content)
 
         expected_response = {'writer': self.nick, 'war': str(self.war['id']), 'score': 200}
 
@@ -259,9 +248,7 @@ class ScoreTest(TestCase):
         start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
         end = datetime.datetime.now() - datetime.timedelta(days=1, minutes=5)
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-
-        self.war = json.loads(lines)
+        self.war = json.loads(result.content)
 
         phenny = DummyPhenny()
 
@@ -275,8 +262,7 @@ class ScoreTest(TestCase):
         assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
 
         result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
-        lines = '\n'.join(result.readlines())
-        scoredata = json.loads(lines)
+        scoredata = json.loads(result.content)
 
         assert scoredata == {}, 'Phenny should not have registered score, but got %s from backend.' % scoredata
 
@@ -284,9 +270,7 @@ class ScoreTest(TestCase):
         start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
         end = datetime.datetime.now() - datetime.timedelta(days=1, minutes=5)
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-
-        self.war = json.loads(lines)
+        self.war = json.loads(result.content)
 
         phenny = DummyPhenny()
         phenny.expected_score = 200
@@ -304,9 +288,7 @@ class ScoreTest(TestCase):
 
     def test_unregister_score(self):
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': self.start.strftime('%s'), 'endtime': self.end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-
-        self.war = json.loads(lines)
+        self.war = json.loads(result.content)
 
         phenny = DummyPhenny()
         phenny.expected_score = 200
@@ -319,10 +301,7 @@ class ScoreTest(TestCase):
         nanowars.score(phenny, inputobj)
 
         result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
-
-        lines = '\n'.join(result.readlines())
-
-        scoredata = json.loads(lines)
+        scoredata = json.loads(result.content)
 
         expected_response = {'writer': self.nick, 'war': str(self.war['id']), 'score': 200}
 
@@ -365,8 +344,7 @@ class InfoTest(TestCase):
         start = datetime.datetime.now() + datetime.timedelta(minutes=5)
         end = datetime.datetime.now() + datetime.timedelta(minutes=10)
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-        wardata = json.loads(lines)
+        wardata = json.loads(result.content)
 
         phenny = DummyPhenny()
         inputobj = DummyInput(self.nick)
@@ -399,8 +377,7 @@ class InfoTest(TestCase):
         start = datetime.datetime.now() - datetime.timedelta(minutes=5)
         end = datetime.datetime.now() + datetime.timedelta(minutes=10)
         result = HelperFunctions().call_django('/api/war/new/', 'POST', {'starttime': start.strftime('%s'), 'endtime': end.strftime('%s')})
-        lines = '\n'.join(result.readlines())
-        wardata = json.loads(lines)
+        wardata = json.loads(result.content)
 
         phenny = DummyPhenny()
         inputobj = DummyInput(self.nick)
