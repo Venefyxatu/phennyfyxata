@@ -254,7 +254,8 @@ def getParticipantScoreForWar(request):
         writers = Writer.objects.filter(nick=writer_nick)
 
         if len(wars) != 1 or len(writers) != 1:
-            raise Http404('Writer %s did not register a score for war %s' % (writer_nick, war_id))
+            result = {}
+            return HttpResponse(json.dumps(result))
 
         war = wars[0]
         writer = writers[0]

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import re
 import json
 import random
 import urllib
@@ -17,6 +18,12 @@ STOPQUOTES = ['Hammertime!',
               'In the name of love!',
               'In the name of fluffy little bunnies!',
               'Drop! Roll!']
+
+STARTSTOP_REGEX = re.compile('(?P<start>(busy|\d{1,2}:\d{1,2})) (?P<end>\d{1,2}:\d{1,2})')
+
+
+class WarTooLongError(Exception):
+    pass
 
 
 def _schedule_war(start, end):
@@ -38,7 +45,7 @@ def _convert_to_epoch(start, end, planning_hour):
     start, end = _check_and_add_day(start, end, planning_hour)
 
     if abs(end - start) > datetime.timedelta(hours=5):
-        raise RuntimeError('Een war van meer dan 5 uur? Ik dacht het niet.')
+        raise WarTooLongError('Een war van meer dan 5 uur? Ik dacht het niet.')
 
     return start.strftime('%s'), end.strftime('%s')
 
@@ -81,27 +88,43 @@ def war(phenny, input):
     Time een war
     """
     planning_hour = datetime.datetime.now()
+    planning_hour -= datetime.timedelta(seconds=planning_hour.second, microseconds=planning_hour.microsecond)
     args = input.group(2)
-    start, end = args.split()
-    start, end = _convert_to_epoch(start, end, planning_hour)
+    match = re.match(STARTSTOP_REGEX, args)
+    if not match:
+        phenny.say('Ik moet wel weten wanneer de war start EN eindigt, %s. Als ik hem alleen moet stoppen moet je busy zeggen als startuur.' % input.nick)
+        return
+    else:
+        groupdict = match.groupdict()
+        start = groupdict['start']
+        end = groupdict['end']
+
+    try:
+        start, end = _convert_to_epoch(start, end, planning_hour)
+    except WarTooLongError, e:
+        phenny.say(e.message)
+        return
     result = _schedule_war(start, end)
-    wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
-    for x in xrange(3, 0, -1):
-        t = Timer(wait - x, phenny.say, [str(x)])
-        t.start()
 
     start_dt = datetime.datetime.fromtimestamp(int(start))
     end_dt = datetime.datetime.fromtimestamp(int(end))
     start_human = start_dt.strftime('%H:%M')
     end_human = end_dt.strftime('%H:%M')
     duration_human = (end_dt - start_dt).seconds / 60
-    t = Timer(wait,
-              phenny.say, ['START war %s (van %s tot %s, %s %s dus)' % (result['id'],
-                                                            start_human,
-                                                            end_human,
-                                                            duration_human,
-                                                            'minuut' if duration_human == 1 else 'minuten')])
-    t.start()
+    if planning_hour != start_dt:
+        phenny.say('Ik zal het startsein geven om %s.' % start_human)
+        wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
+        for x in xrange(3, 0, -1):
+            t = Timer(wait - x, phenny.say, [str(x)])
+            t.start()
+        t = Timer(wait,
+                phenny.say, ['START war %s (van %s tot %s, %s %s dus)' % (result['id'],
+                                                                start_human,
+                                                                end_human,
+                                                                duration_human,
+                                                                'minuut' if duration_human == 1 else 'minuten')])
+        t.start()
+    phenny.say('Ik zal het stopsein geven om %s.' % end_human)
     wait_end = int(int(result['endtime']) - int(datetime.datetime.now().strftime('%s')))
     t_end = Timer(wait_end, phenny.say, ['War %s: STOP - %s' % (result['id'], random.choice(STOPQUOTES))])
     t_end.start()
@@ -171,6 +194,7 @@ def score(phenny, input):
         war_info = json.loads(result.read())
         if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
             phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
+            return
 
     if score == 0:
         result = _call_django('api/score/deregister/', 'POST', {'writer': writer_nick, 'war': war_id})

@@ -7,6 +7,7 @@ import commands
 import datetime
 
 from unittest import TestCase
+from nanowars import WarTooLongError
 
 
 class HelperFunctions:
@@ -37,6 +38,17 @@ class DummyPhenny:
 
     def say(self, what):
         self.said.append(what)
+        if 'STOP' in what:
+            assert datetime.datetime.now().strftime('%H:%M') == self.expected_end.strftime('%H:%M'), 'Expected STOP at %s, not %s' % (self.expected_end, datetime.datetime.now())
+        elif 'START' in what:
+            assert datetime.datetime.now().strftime('%H:%m') == self.expected_start.strftime('%H:%m'), 'Expected START at %s, not %s' % (self.expected_start, datetime.datetime.now())
+
+        elif what == '3':
+            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=3)).strftime('%H:%m')
+        elif what == '2':
+            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=2)).strftime('%H:%m')
+        elif what == '1':
+            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=1)).strftime('%H:%m')
 
 
 class DummyInput:
@@ -54,6 +66,45 @@ class WarTest(TestCase):
         self.start = self.now + datetime.timedelta(minutes=1) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         self.end = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+
+    def test_not_enough_arguments(self):
+        nick = 'Testie'
+        phenny = DummyPhenny()
+        inputobj = DummyInput()
+
+        inputobj.properties.append('war')
+        inputobj.properties.append(self.start.strftime('%H:%M'))
+
+        nanowars.war(phenny, inputobj)
+
+        expected_said = 'Ik moet wel weten wanneer de war start EN eindigt, %s. Als ik hem alleen moet stoppen moet je busy zeggen als startuur.' % nick
+
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+
+    def test_busy_war(self):
+        end = self.now + datetime.timedelta(minutes=1)
+        end -= datetime.timedelta(seconds=end.second, microseconds=end.microsecond)
+        phenny = DummyPhenny()
+        phenny.expected_end = end
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('busy %s' % end.strftime('%H:%M'))
+        inputobj.properties.append(end)
+
+        nanowars.war(phenny, inputobj)
+
+        time.sleep(2)
+
+        expected_said = 'Ik zal het stopsein geven om %s.' % end.strftime('%H:%M')
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+        expected_unsaid = 'Ik zal het startsein geven om %s.' % self.now.strftime('%H:%M')
+        assert expected_unsaid not in phenny.said, 'Expected phenny not to say %s, instead she said %s' % (expected_unsaid, '\n'.join(phenny.said))
+
+        time_to_wait = int(end.strftime('%s')) - time.time()
+
+        time.sleep(time_to_wait + 5)
+
+        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
 
     def test_war(self):
         phenny = DummyPhenny(self.start, self.end)
@@ -75,6 +126,19 @@ class WarTest(TestCase):
         assert '1' in phenny.said, 'phenny.say was not called with 1'
         assert 'War 1 is voorbij. Je kan je score registreren met .score 1 <score>' in phenny.said, 'phenny did not say how to register score'
         assert 'Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/1/overview/' in phenny.said, 'phenny did not say where to find the score list'
+
+    def test_war_too_long(self):
+        end = self.now + datetime.timedelta(hours=6) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+
+        phenny = DummyPhenny(self.start, end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        expected_said = 'Een war van meer dan 5 uur? Ik dacht het niet.'
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
 
     def test_two_wars_last_planned_first(self):
         phenny = DummyPhenny(self.start, self.end)
@@ -209,6 +273,12 @@ class ScoreTest(TestCase):
 
         expected_said = 'Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (self.war['id'], 200)
         assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+
+        result = HelperFunctions().call_django('/api/writer/getscore/', 'POST', {'writer': self.nick, 'war': self.war['id']})
+        lines = '\n'.join(result.readlines())
+        scoredata = json.loads(lines)
+
+        assert scoredata == {}, 'Phenny should not have registered score, but got %s from backend.' % scoredata
 
     def test_score_old_war_certain(self):
         start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
@@ -405,7 +475,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start.strftime('%H:%M'), end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -419,7 +489,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start.strftime('%H:%M'), end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -433,7 +503,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start.strftime('%H:%M'), end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -475,7 +545,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start.strftime('%H:%M'), end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -489,7 +559,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start.strftime('%H:%M'), end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -515,7 +585,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start, end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
@@ -529,7 +599,7 @@ class TimeTest(TestCase):
 
         try:
             result_start, result_end = nanowars._convert_to_epoch(start, end.strftime('%H:%M'), self.planning_hour)
-        except RuntimeError, e:
+        except WarTooLongError, e:
             assert e.message == 'Een war van meer dan 5 uur? Ik dacht het niet.', 'Got wrong message (%s) for war longer than 5 hours.' % e.message
             raised = True
 
