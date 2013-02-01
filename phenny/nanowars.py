@@ -138,18 +138,27 @@ war.commands = ['war']
 war.example = '.war 15:50 16:00'
 
 
+def get_war_info(path):
+    result = _call_django(path, 'GET')
+    lines = '\n'.join(result.readlines())
+    wars = json.loads(lines)
+    return wars
+
+
+def say_war_info(phenny, plannedwars):
+    for plannedwar in plannedwars:
+        start = datetime.datetime.fromtimestamp(int(plannedwar['starttime']))
+        end = datetime.datetime.fromtimestamp(int(plannedwar['endtime']))
+        delta = (end - start).seconds / 60
+        phenny.say('War %s: van %s tot %s (%s minuten dus)' % (plannedwar['id'], start.strftime('%H:%M'), end.strftime('%H:%M'), delta))
+
+
 def plannedwars(phenny, input):
     ''' Geef een overzicht van de geplande wars '''
-    result = _call_django('api/war/planned/', 'GET')
-    lines = '\n'.join(result.readlines())
-    plannedwars = json.loads(lines)
+    plannedwars = get_war_info('api/war/planned/')
     if plannedwars:
         phenny.say('Deze wars zijn nog gepland:')
-        for plannedwar in plannedwars:
-            start = datetime.datetime.fromtimestamp(int(plannedwar['starttime']))
-            end = datetime.datetime.fromtimestamp(int(plannedwar['endtime']))
-            delta = (end - start).seconds / 60
-            phenny.say('War %s: van %s tot %s (%s minuten dus)' % (plannedwar['id'], start.strftime('%H:%M'), end.strftime('%H:%M'), delta))
+        say_war_info(phenny, plannedwars)
     else:
         phenny.say('Er zijn geen wars gepland.')
 
@@ -158,16 +167,10 @@ plannedwars.commands = ['plannedwars']
 
 def activewars(phenny, input):
     ''' Geef een overzicht van de actieve wars '''
-    result = _call_django('api/war/active/', 'GET')
-    lines = '\n'.join(result.readlines())
-    plannedwars = json.loads(lines)
-    if plannedwars:
+    activewars = get_war_info('api/war/active/')
+    if activewars:
         phenny.say('Deze wars zijn bezig:')
-        for plannedwar in plannedwars:
-            start = datetime.datetime.fromtimestamp(int(plannedwar['starttime']))
-            end = datetime.datetime.fromtimestamp(int(plannedwar['endtime']))
-            delta = (end - start).seconds / 60
-            phenny.say('War %s: van %s tot %s (%s minuten dus)' % (plannedwar['id'], start.strftime('%H:%M'), end.strftime('%H:%M'), delta))
+        say_war_info(phenny, activewars)
     else:
         phenny.say('Er zijn geen wars bezig.')
 
