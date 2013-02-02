@@ -12,11 +12,11 @@ from scores.models import ParticipantScore
 
 class ParticipationHelper:
     def participate(self, war_id, writer_nick):
-        response = Client().post('/api/war/%s/participate/' % war_id, {'writer': writer_nick})
+        response = Client().post('/api/war/participate/', {'id': war_id, 'writer': writer_nick})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
     def withdraw(self, war_id, writer_nick):
-        response = Client().post('/api/war/%s/withdraw/' % war_id, {'writer': writer_nick})
+        response = Client().post('/api/war/withdraw/', {'id': war_id, 'writer': writer_nick})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
 
 
@@ -74,7 +74,7 @@ class ParticipantTests(TestCase):
         assert len(participants) == 0, 'Should have 0 participants, not %s' % len(participants)
 
     def test_participate_nonexistant_war(self):
-        response = self.c.post('/api/war/%s/participate/' % 9, {'writer': self.writer.nick})
+        response = self.c.post('/api/war/participate/', {'id': 9, 'writer': self.writer.nick})
         assert response.status_code == 404, 'Response status should be 404, not %s' % response.status_code
 
     def test_list_participants(self):
@@ -83,7 +83,7 @@ class ParticipantTests(TestCase):
         participants = WarParticipants.objects.filter(war__id=self.war.id)
         assert len(participants) == 1, 'Should have 1 participant, not %s' % len(participants)
 
-        response = self.c.get('/api/war/%s/listparticipants/' % self.war.id)
+        response = self.c.post('/api/war/listparticipants/', {'id': self.war.id})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = [self.writer.nick]
         assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
@@ -93,7 +93,7 @@ class ParticipantTests(TestCase):
         participants = WarParticipants.objects.filter(war__id=self.war.id)
         assert len(participants) == 2, 'Should have 1 participant, not %s' % len(participants)
 
-        response = self.c.get('/api/war/%s/listparticipants/' % self.war.id)
+        response = self.c.post('/api/war/listparticipants/', {'id': self.war.id})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = [self.writer.nick, 'NewWriter']
         assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
@@ -103,7 +103,7 @@ class ParticipantTests(TestCase):
         participants = WarParticipants.objects.filter(war__id=self.war.id)
         assert len(participants) == 1, 'Should have 1 participant, not %s' % len(participants)
 
-        response = self.c.get('/api/war/%s/listparticipants/' % self.war.id)
+        response = self.c.post('/api/war/listparticipants/', {'id': self.war.id})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         expected_response = ['NewWriter']
         assert json.loads(response.content) == expected_response, 'Response should be "%s", not %s' % (expected_response, json.loads(response.content))
@@ -113,7 +113,7 @@ class ParticipantTests(TestCase):
         participants = WarParticipants.objects.filter(war__id=self.war.id)
         assert len(participants) == 0, 'Should have 0 participants, not %s' % len(participants)
 
-        response = self.c.get('/api/war/%s/listparticipants/' % self.war.id)
+        response = self.c.post('/api/war/listparticipants/', {'id': self.war.id})
         assert response.status_code == 200, 'Response status should be 200, not %s' % response.status_code
         assert json.loads(response.content) == [], 'Response should be [], not %s' % json.loads(response.content)
 

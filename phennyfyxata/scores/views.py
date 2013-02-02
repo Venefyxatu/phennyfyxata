@@ -179,7 +179,7 @@ def singleWarInfo(request):
             war = War.objects.get(id=war_id)
         except ObjectDoesNotExist:
             logging.log(logging.INFO, 'War %s does not exist' % war_id)
-            raise Http404('That war does not exist')
+            return HttpResponse(json.dumps({}))
 
         info = json.dumps({'id': war_id, 'starttime': war.starttime.strftime('%s'), 'endtime': war.endtime.strftime('%s')})
         logging.log(logging.INFO, 'Returning %s' % info)
@@ -196,8 +196,9 @@ def singleWarOverview(request, war_id):
     return render_to_response('scores/singleWarOverview.html', {'war': war})
 
 
-def participateWar(request, war_id):
+def participateWar(request):
     if request.method == 'POST':
+        war_id = request.POST.get('id')
         participant_nick = request.POST.get('writer')
         participant, created = Writer.objects.get_or_create(nick=participant_nick)
         logging.log(logging.INFO, "Registering participant %s to war %s" % (participant.id, war_id))
@@ -211,9 +212,10 @@ def participateWar(request, war_id):
         raise Http404
 
 
-def withdrawWar(request, war_id):
+def withdrawWar(request):
     if request.method == 'POST':
         logging.log(logging.INFO, "Withdrawing participant from war")
+        war_id = request.POST.get('id')
         participant_nick = request.POST.get('writer')
         participant, created = Writer.objects.get_or_create(nick=participant_nick)
         logging.log(logging.INFO, "Withdrawing participant %s from war %s" % (participant.id, war_id))
@@ -229,16 +231,20 @@ def withdrawWar(request, war_id):
         raise Http404()
 
 
-def listWarParticipants(request, war_id):
-    logging.log(logging.INFO, "Listing participants for war %s" % war_id)
-    wars = War.objects.filter(id=war_id)
-    if not wars:
-        raise Http404('War %s not found' % war_id)
-    else:
-        war = wars[0]
-    participants = WarParticipants.objects.filter(war=war)
+def listWarParticipants(request):
+    if request.method == 'POST':
+        war_id = request.POST.get('id')
+        logging.log(logging.INFO, "Listing participants for war %s" % war_id)
+        wars = War.objects.filter(id=war_id)
+        if not wars:
+            raise Http404('War %s not found' % war_id)
+        else:
+            war = wars[0]
+        participants = WarParticipants.objects.filter(war=war)
 
-    return HttpResponse(json.dumps([participant.participant.nick for participant in participants]))
+        return HttpResponse(json.dumps([participant.participant.nick for participant in participants]))
+    else:
+        raise Http404()
 
 
 def getParticipantScoreForWar(request):
