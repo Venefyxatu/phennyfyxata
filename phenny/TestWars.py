@@ -1,3 +1,4 @@
+import re
 import time
 import json
 import requests
@@ -7,6 +8,9 @@ import datetime
 
 from unittest import TestCase
 from nanowars import WarTooLongError
+
+
+INT_REGEX = re.compile('\d')
 
 
 class HelperFunctions:
@@ -33,17 +37,18 @@ class DummyPhenny:
 
     def say(self, what):
         self.said.append(what)
-        if 'STOP' in what:
-            assert datetime.datetime.now().strftime('%H:%M') == self.expected_end.strftime('%H:%M'), 'Expected STOP at %s, not %s' % (self.expected_end, datetime.datetime.now())
-        elif 'START' in what:
-            assert datetime.datetime.now().strftime('%H:%m') == self.expected_start.strftime('%H:%m'), 'Expected START at %s, not %s' % (self.expected_start, datetime.datetime.now())
+        self._check_speech_timing(what)
 
-        elif what == '3':
-            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=3)).strftime('%H:%m')
-        elif what == '2':
-            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=2)).strftime('%H:%m')
-        elif what == '1':
-            assert datetime.datetime.now().strftime('%H:%m') == (self.expected_start - datetime.timedelta(seconds=1)).strftime('%H:%m')
+    def _check_speech_timing(self, what):
+        if 'STOP' in what:
+            assert datetime.datetime.now().strftime('%H:%M:%S') == self.expected_end.strftime('%H:%M:%S'), 'Expected STOP at %s, not %s' % (self.expected_end, datetime.datetime.now())
+        elif 'START' in what:
+            assert datetime.datetime.now().strftime('%H:%M:%S') == self.expected_start.strftime('%H:%M:%S'), 'Expected START at %s, not %s' % (self.expected_start, datetime.datetime.now())
+        elif re.match(INT_REGEX, what):
+            what = int(what)
+            assert datetime.datetime.now().strftime('%H:%M:%S') == (self.expected_start - datetime.timedelta(seconds=what)).strftime('%H:%M:%S'), 'Expected %s at %s, not %s' % (what, datetime.datetime.now().strftime('%H:%M:%S'), (self.expected_start - datetime.timedelta(seconds=what)).strftime('%H:%M:%S'))
+        elif 'begint over' in what:
+            assert datetime.datetime.now().strftime('%H:%M:%S') == (self.expected_start - datetime.timedelta(seconds=10)).strftime('%H:%M:%S')
 
 
 class DummyInput:
