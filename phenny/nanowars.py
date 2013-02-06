@@ -28,7 +28,7 @@ class WarTooLongError(Exception):
 def _schedule_war(start, end):
     result = _call_django('api/war/new/', 'POST', {'starttime': start, 'endtime': end})
 
-    return json.loads(result.content)
+    return result
 
 
 def _convert_to_epoch(start, end, planning_hour):
@@ -71,13 +71,15 @@ def _call_django(location, method='GET', urldata=None):
     elif method == 'POST':
         result = requests.post(url, urldata)
 
-    return result
+    if result.status_code == 404:
+        return None
+    else:
+        return json.loads(result.content)
 
 
 def _get_war_info(path):
     result = _call_django(path, 'GET')
-    wars = json.loads(result.content)
-    return wars
+    return result
 
 
 def _say_war_info(phenny, plannedwars):
@@ -178,13 +180,12 @@ def score(phenny, input):
         phenny.say('Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % writer_nick)
         return
 
-    result = _call_django('api/war/info/', 'POST', {'id': war_id})
+    war_info = _call_django('api/war/info/', 'POST', {'id': war_id})
 
-    if result.status_code == 404:
+    if not war_info:
         phenny.say('Die war ken ik niet, %s' % writer_nick)
         return
     else:
-        war_info = json.loads(result.content)
         if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
             phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
             return
@@ -194,10 +195,9 @@ def score(phenny, input):
     else:
         result = _call_django('api/score/register/', 'POST', {'writer': writer_nick, 'score': score, 'war': war_id})
 
-    res = result.content
-    if res == 'OK' and score == 0:
+    if result == 'OK' and score == 0:
         phenny.say('Ik heb je score voor war %s verwijderd, %s.' % (war_id, writer_nick))
-    elif res == 'OK':
+    elif result == 'OK':
         phenny.say('Score %s staat genoteerd voor war %s, %s.' % (score, war_id, writer_nick))
 
 score.commands = ['score']
