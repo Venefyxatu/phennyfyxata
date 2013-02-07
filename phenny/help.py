@@ -6,7 +6,7 @@ import random
 
 from collections import deque
 
-topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel", "plannedwars", "activewars", "participate", "withdraw"]
+topics = ["war", "smileys", "nick", "motivation", "voedsel", "plannedwars", "activewars", "participate", "withdraw"]
 randomwords = ['tafelpoot', 'olifantenteennagel', 'rijstpap', 'autoradioantennevlaggetje', 'muggenvleugel', ]
 
 action = chr(1) + "ACTION "
