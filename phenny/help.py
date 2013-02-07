@@ -7,9 +7,10 @@ import random
 from validation import _SCORE_COMMAND
 from collections import deque
 
-topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel", "plannedwars", "activewars"]
+topics = ["war", "smileys", "nick", "motivation", "roulette", "voedsel", "plannedwars", "activewars", "participate", "withdraw"]
 
 topicCache = deque()
+
 
 def motivation_help(phenny, nick):
     choices = ["GA SCHRIJVEN, %s!" % nick,
@@ -43,18 +44,22 @@ def motivation_help(phenny, nick):
 
     phenny.say(chosen)
 
+
 def general_help(phenny):
     phenny.say("Je kan me om hulp vragen over de volgende onderwerpen met .help <onderwerp>")
     phenny.say(", ".join(topics))
 
+
 def nick_help(phenny):
     phenny.say("Je kan je naam veranderen met /nick <nieuwenaam>")
+
 
 def smileys_help(phenny):
     phenny.say("Dit zijn enkele vaak gebruikte smileys en hoe je ze maakt: ")
     phenny.say(":-) is : - )")
     phenny.say(":( is : (")
     phenny.say("O_o en O.o zijn O _ o en O . o")
+
 
 def war_help(phenny):
     phenny.say("Ik zal je vertellen wanneer je moet starten en stoppen met schrijven als je mij een begin- en einduur geeft.")
@@ -64,9 +69,20 @@ def war_help(phenny):
     phenny.say("Ik kan ook je score bijhouden. Daarvoor zeg je gewoon %s <war nr> <score> en ik schrijf 'm op samen met je nick." % _SCORE_COMMAND)
     phenny.say("Je kan de scores bekijken op http://phenny.venefyxatu.be")
 
+
+def participate_help(phenny):
+    phenny.say('Ik kan je persoonlijk verwittigen door je nick te vermelden 10 seconden voordat een war begint, en ook weer wanneer hij afloopt.')
+    phenny.say('Als je dat wil, zeg dan .participate <war nr>')
+
+
+def withdraw_help(phenny):
+    phenny.say('Als je voor een war toch geen verwittiging wil ontvangen, zeg dan .withdraw <war nr>.')
+
+
 def voedsel_help(phenny):
     phenny.say("Af en toe heb je voedsel nodig. Ik ben dan misschien maar een bot, maar geloof me toch maar.")
     phenny.say("Echt voedsel wordt enkel in het echt geleverd... hier moet je het stellen met een digitale sandwich. Gebruik .eten of .noms")
+
 
 def roulette_help(phenny):
     phenny.say("Als je het helemaal niet meer ziet zitten kan je misschien een virtueel spelletje Russische roulette spelen...")
@@ -75,19 +91,21 @@ def roulette_help(phenny):
     phenny.say("Als je het dan nog steeds niet ziet zitten haal je de trekker over met .pull")
     phenny.say("DOE DIT NIET IN HET ECHT, want dan kan je eraan doodgaan!")
 
+
 def plannedwars_help(phenny):
     phenny.say("Je kan een overzicht krijgen van welke wars gepland zijn met het commando .plannedwars")
+
 
 def activewars_help(phenny):
     phenny.say("Je kan een overzicht krijgen van welke wars bezig zijn met het commando .activewars")
 
-def help(phenny, input): 
+
+def help(phenny, input):
     """
     Show the help
     """
     print "%s New command received in help module" % time.localtime()
     arguments = input.group(2)
-    command = input.group(1)
 
     if arguments == "war":
         war_help(phenny)
@@ -105,6 +123,10 @@ def help(phenny, input):
         plannedwars_help(phenny)
     elif arguments == "activewars":
         activewars_help(phenny)
+    elif arguments == "participate":
+        participate_help(phenny)
+    elif arguments == "withdraw":
+        withdraw_help(phenny)
     else:
         general_help(phenny)
 
@@ -112,5 +134,5 @@ def help(phenny, input):
 help.commands = ["help"]
 help.example = '.help'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()
