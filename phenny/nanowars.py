@@ -180,11 +180,11 @@ def score(phenny, input):
 
     result = _call_django('api/war/info/', 'POST', {'id': war_id})
 
-    if result.status_code == 404:
-        phenny.say('Die war ken ik niet, %s' % writer_nick)
+    war_info = json.loads(result.content)
+    if not war_info:
+        phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % writer_nick)
         return
     else:
-        war_info = json.loads(result.content)
         if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
             phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
             return
