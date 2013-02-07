@@ -204,7 +204,7 @@ def score(phenny, input):
 
     war_info = json.loads(result.content)
     if not war_info:
-        phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % writer_nick)
+        phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % war_id)
         return
     elif (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
         phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))

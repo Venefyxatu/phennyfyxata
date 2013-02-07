@@ -446,8 +446,7 @@ class ScoreTest(TestCase):
         inputobj.properties.append('999 200')
         nanowars.score(phenny, inputobj)
 
-        assert "Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % self.nick in phenny.said
-
+        assert "Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % 999 in phenny.said
 
     def test_invalid_data(self):
         phenny = DummyPhenny()
