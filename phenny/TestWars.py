@@ -86,7 +86,7 @@ class ParticipateTest(TestCase):
 
         inputobj = DummyInput(nick)
         inputobj.properties.append('participate')
-        inputobj.properties.append('1')
+        inputobj.properties.append('war 1')
 
         nanowars.participate(phenny, inputobj)
 
@@ -176,7 +176,7 @@ class ParticipateTest(TestCase):
 
         inputobj = DummyInput(nick)
         inputobj.properties.append('participate')
-        inputobj.properties.append('1')
+        inputobj.properties.append('war 1')
 
         nanowars.participate(phenny, inputobj)
 
@@ -301,7 +301,7 @@ class WarTest(TestCase):
 
         expected_said = 'Ik zal het stopsein geven om %s.' % end.strftime('%H:%M')
         assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
-        expected_unsaid = 'Ik zal het startsein geven om %s.' % self.now.strftime('%H:%M')
+        expected_unsaid = 'Ik zal het startsein geven voor war 1 om %s.' % self.now.strftime('%H:%M')
         assert expected_unsaid not in phenny.said, 'Expected phenny not to say %s, instead she said %s' % (expected_unsaid, '\n'.join(phenny.said))
 
         time_to_wait = int(end.strftime('%s')) - time.time()
