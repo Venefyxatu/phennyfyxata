@@ -196,7 +196,7 @@ def score(phenny, input):
         war_id = int(values[0])
         score = int(values[1])
         sure = True if len(values) == 3 and values[2] == 'zeker' else False
-    except ValueError:
+    except (ValueError, IndexError):
         phenny.say('Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % writer_nick)
         return
 

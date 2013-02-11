@@ -458,6 +458,16 @@ class ScoreTest(TestCase):
 
         assert 'Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % self.nick in phenny.said, 'Phenny did not say what was wrong, instead she said: %s' % '\n'.join(phenny.said)
 
+    def test_not_enough_data(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('942')
+
+        nanowars.score(phenny, inputobj)
+
+        assert 'Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % self.nick in phenny.said, 'Phenny did not say what was wrong, instead she said: %s' % '\n'.join(phenny.said)
+
     def test_score_old_war(self):
         start = datetime.datetime.now() - datetime.timedelta(days=1, minutes=10)
         end = datetime.datetime.now() - datetime.timedelta(days=1, minutes=5)
