@@ -18,6 +18,11 @@ STOPQUOTES = ['Hammertime!',
               'In the name of fluffy little bunnies!',
               'Drop! Roll!']
 
+CONTESTS = ['Het wereldkampioenschap zakkenvullen?',
+            'Een wedstrijdje uit de maat dansen?',
+            'De Olympische spelen?',
+            'Een cursus onderwatermandjesvlechten voor gevorderden?']
+
 STARTSTOP_REGEX = re.compile('(?P<start>(busy|\d{1,2}:\d{1,2})) (?P<end>\d{1,2}:\d{1,2})')
 WARID_REGEX = re.compile('(war )?(?P<war_id>\d+)')
 
@@ -239,7 +244,12 @@ def _get_warid(phenny, args, writer_nick):
 
 def withdraw(phenny, input):
     writer_nick = input.nick
-    war_id = _get_warid(phenny, input.group(2), writer_nick)
+    args = input.group(2)
+    if not args:
+        phenny.say('Ja, maar waaraan wil je niet meer deelnemen, %s? %s' % (writer_nick, random.choice(CONTESTS)))
+        return
+
+    war_id = _get_warid(phenny, args, writer_nick)
 
     if not war_id:
         return
@@ -261,7 +271,11 @@ withdraw.commands = ['withdraw']
 
 def participate(phenny, input):
     writer_nick = input.nick
-    war_id = _get_warid(phenny, input.group(2), writer_nick)
+    args = input.group(2)
+    if not args:
+        phenny.say('Ja, maar waaraan wil je deelnemen, %s? %s' % (writer_nick, random.choice(CONTESTS)))
+        return
+    war_id = _get_warid(phenny, args, writer_nick)
     if not war_id:
         return
 
@@ -286,5 +300,6 @@ def participate(phenny, input):
     phenny.say('OK, ik verwittig je persoonlijk 10 seconden voordat war %s begint, en nog eens wanneer de war eindigt, %s' % (war_id, writer_nick))
 
 participate.commands = ['participate']
+
 if __name__ == '__main__':
     print __doc__.strip()
