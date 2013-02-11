@@ -52,7 +52,11 @@ class DummyInput:
         self.nick = nick if nick else 'Testie'
 
     def group(self, index):
-        return self.properties[index]
+        try:
+            retval = self.properties[index]
+        except IndexError:
+            retval = None
+        return retval
 
 
 class ParticipateTest(TestCase):
@@ -61,6 +65,32 @@ class ParticipateTest(TestCase):
         self.start = self.now + datetime.timedelta(minutes=1) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         self.end = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
         commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+
+    def test_no_args(self):
+        phenny = DummyPhenny()
+
+        nick = 'Testie'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+
+        nanowars.participate(phenny, inputobj)
+
+        phenny_said = filter(lambda said: 'Ja, maar waaraan wil je deelnemen, %s?' % nick in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should ask what to participate in, instead she said: %s' % '\n'.join(phenny.said)
+
+    def test_no_args_withdraw(self):
+        phenny = DummyPhenny()
+
+        nick = 'Testie'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('withdraw')
+
+        nanowars.withdraw(phenny, inputobj)
+
+        phenny_said = filter(lambda said: 'Ja, maar waaraan wil je niet meer deelnemen, %s?' % nick in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should ask what to withdraw from, instead she said %s' % '\n'.join(phenny.said)
 
     def test_invalid_data(self):
         phenny = DummyPhenny()
