@@ -19,6 +19,7 @@ STOPQUOTES = ['Hammertime!',
               'Drop! Roll!']
 
 STARTSTOP_REGEX = re.compile('(?P<start>(busy|\d{1,2}:\d{1,2})) (?P<end>\d{1,2}:\d{1,2})')
+WARID_REGEX = re.compile('(war )?(?P<war_id>\d+)')
 
 
 class WarTooLongError(Exception):
@@ -117,7 +118,7 @@ def war(phenny, input):
     end_human = end_dt.strftime('%H:%M')
     duration_human = (end_dt - start_dt).seconds / 60
     if planning_hour != start_dt:
-        phenny.say('Ik zal het startsein geven om %s.' % start_human)
+        phenny.say('Ik zal het startsein geven voor war %s om %s.' % (result['id'], start_human))
         wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
 
         for x in xrange(3, 0, -1):
@@ -225,9 +226,23 @@ score.commands = ['score']
 score.example = '.score 1 2003'
 
 
+def _get_warid(phenny, args, writer_nick):
+
+    match = re.match(WARID_REGEX, args).groupdict()
+
+    if not 'war_id' in match:
+        phenny.say('Oei, ik begrijp niet welke war je bedoelt, %s' % writer_nick)
+        return None
+
+    return match['war_id']
+
+
 def withdraw(phenny, input):
     writer_nick = input.nick
-    war_id = input.group(2)
+    war_id = _get_warid(phenny, input.group(2), writer_nick)
+
+    if not war_id:
+        return
 
     result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
@@ -246,7 +261,9 @@ withdraw.commands = ['withdraw']
 
 def participate(phenny, input):
     writer_nick = input.nick
-    war_id = input.group(2)
+    war_id = _get_warid(phenny, input.group(2), writer_nick)
+    if not war_id:
+        return
 
     result = _call_django('api/war/info/', 'POST', {'id': war_id})
 
