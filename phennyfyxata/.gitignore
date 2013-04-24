@@ -1,7 +1,6 @@
 *.gif
 *.jpg
 *.swp
-settings.py
 *.pyc
 *.log
 *.json
