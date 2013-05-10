@@ -8,7 +8,7 @@ from collections import deque
 insults = []
 insultCache = deque()
 maxCacheSize = 5
-insultStore = "/RAID/sandbox/phenny/lartstore.txt"
+insultStore = "/opt/projects/evilphenny/lartstore.txt"
 
 def adjust(phenny, arguments, asker):
     if not arguments or arguments.lower() in ["phenny", "phennyfyxata"]:
@@ -40,9 +40,9 @@ def addTool(phenny, arguments):
         f.write('\n'.join(insults))
     finally:
         f.close()
-    
 
-def lart(phenny, input): 
+
+def lart(phenny, input):
     """
     Insult a user
     """
@@ -63,10 +63,10 @@ def setup(self):
         insults = f.read().split('\n')
     finally:
         f.close()
-        
+
 
 lart.commands = ["lart", "addlart"]
 lart.example = '.lart username'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()
