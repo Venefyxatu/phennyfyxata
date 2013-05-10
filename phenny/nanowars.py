@@ -8,8 +8,7 @@ import requests
 import datetime
 from threading import Timer
 
-#djangoUrl = 'http://phenny.venefyxatu.be/'
-djangoUrl = 'http://localhost:8000/'
+djangoUrl = 'http://phenny.venefyxatu.be/'
 action = chr(1) + 'ACTION '
 
 STOPQUOTES = ['Hammertime!',
