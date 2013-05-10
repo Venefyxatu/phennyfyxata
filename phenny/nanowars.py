@@ -18,7 +18,13 @@ STOPQUOTES = ['Hammertime!',
               'In the name of fluffy little bunnies!',
               'Drop! Roll!']
 
+CONTESTS = ['Het wereldkampioenschap zakkenvullen?',
+            'Een wedstrijdje uit de maat dansen?',
+            'De Olympische spelen?',
+            'Een cursus onderwatermandjesvlechten voor gevorderden?']
+
 STARTSTOP_REGEX = re.compile('(?P<start>(busy|\d{1,2}:\d{1,2})) (?P<end>\d{1,2}:\d{1,2})')
+WARID_REGEX = re.compile('(war )?(?P<war_id>\d+)')
 
 
 class WarTooLongError(Exception):
@@ -119,11 +125,16 @@ def war(phenny, input):
     end_human = end_dt.strftime('%H:%M')
     duration_human = (end_dt - start_dt).seconds / 60
     if planning_hour != start_dt:
-        phenny.say('Ik zal het startsein geven om %s.' % start_human)
+        phenny.say('Ik zal het startsein geven voor war %s om %s.' % (result['id'], start_human))
         wait = int(int(result['starttime']) - int(datetime.datetime.now().strftime('%s')))
+
         for x in xrange(3, 0, -1):
             t = Timer(wait - x, phenny.say, [str(x)])
             t.start()
+
+        t_notify = Timer(wait - 10, warn_participants_start, [phenny, result['id']])
+        t_notify.start()
+
         t = Timer(wait,
                 phenny.say, ['START war %s (van %s tot %s, %s %s dus)' % (result['id'],
                                                                 start_human,
@@ -133,7 +144,7 @@ def war(phenny, input):
         t.start()
     phenny.say('Ik zal het stopsein geven om %s.' % end_human)
     wait_end = int(int(result['endtime']) - int(datetime.datetime.now().strftime('%s')))
-    t_end = Timer(wait_end, phenny.say, ['War %s: STOP - %s' % (result['id'], random.choice(STOPQUOTES))])
+    t_end = Timer(wait_end, stop_war, [phenny, result['id']])
     t_end.start()
     t_score = Timer(wait_end + 2, phenny.say, ['War %s is voorbij. Je kan je score registreren met .score %s <score>' % (result['id'], result['id'])])
     t_score.start()
@@ -143,6 +154,23 @@ def war(phenny, input):
 
 war.commands = ['war']
 war.example = '.war 15:50 16:00'
+
+
+def stop_war(phenny, war_id):
+    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
+    participants = json.loads(result.content)
+
+    participantstring = ', '.join(participants) if participants else ''
+
+    phenny.say('%s War %s: STOP - %s' % (participantstring, war_id, random.choice(STOPQUOTES)))
+
+
+def warn_participants_start(phenny, war_id):
+    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
+    participants = json.loads(result.content)
+
+    if participants:
+        phenny.say('%s, war %s begint over 10 seconden.' % (', '.join(participants), war_id))
 
 
 def plannedwars(phenny, input):
@@ -176,19 +204,19 @@ def score(phenny, input):
         war_id = int(values[0])
         score = int(values[1])
         sure = True if len(values) == 3 and values[2] == 'zeker' else False
-    except ValueError:
+    except (ValueError, IndexError):
         phenny.say('Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % writer_nick)
         return
 
     war_info = _call_django('api/war/info/', 'POST', {'id': war_id})
 
+    war_info = json.loads(result.content)
     if not war_info:
-        phenny.say('Die war ken ik niet, %s' % writer_nick)
+        phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % war_id)
         return
-    else:
-        if (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
-            phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
-            return
+    elif (datetime.datetime.now() - datetime.datetime.fromtimestamp(int(war_info['endtime']))).days >= 1 and not sure:
+        phenny.say('Die war is een dag of meer geleden gestopt. Als je heel zeker bent dat je er nog een score voor wil registreren, zeg dan .score %s %s zeker' % (war_id, score))
+        return
 
     if score == 0:
         result = _call_django('api/score/deregister/', 'POST', {'writer': writer_nick, 'war': war_id})
@@ -202,6 +230,77 @@ def score(phenny, input):
 
 score.commands = ['score']
 score.example = '.score 1 2003'
+
+
+def _get_warid(phenny, args, writer_nick):
+
+    match = re.match(WARID_REGEX, args).groupdict()
+
+    if not 'war_id' in match:
+        phenny.say('Oei, ik begrijp niet welke war je bedoelt, %s' % writer_nick)
+        return None
+
+    return match['war_id']
+
+
+def withdraw(phenny, input):
+    writer_nick = input.nick
+    args = input.group(2)
+    if not args:
+        phenny.say('Ja, maar waaraan wil je niet meer deelnemen, %s? %s' % (writer_nick, random.choice(CONTESTS)))
+        return
+
+    war_id = _get_warid(phenny, args, writer_nick)
+
+    if not war_id:
+        return
+
+    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
+
+    participants = json.loads(result.content)
+
+    if writer_nick not in participants:
+        phenny.say('Je deed niet mee, %s :-)' % writer_nick)
+        return
+
+    _call_django('api/war/withdraw/', 'POST', {'id': war_id, 'writer': writer_nick})
+
+    phenny.say('OK, ik schrap je uit de deelnemerslijst, %s.' % writer_nick)
+
+withdraw.commands = ['withdraw']
+
+
+def participate(phenny, input):
+    writer_nick = input.nick
+    args = input.group(2)
+    if not args:
+        phenny.say('Ja, maar waaraan wil je deelnemen, %s? %s' % (writer_nick, random.choice(CONTESTS)))
+        return
+    war_id = _get_warid(phenny, args, writer_nick)
+    if not war_id:
+        return
+
+    result = _call_django('api/war/info/', 'POST', {'id': war_id})
+
+    war_info = json.loads(result.content)
+
+    if not war_info:
+        phenny.say('Die war ken ik niet, %s' % writer_nick)
+        return
+
+    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
+
+    participants = json.loads(result.content)
+
+    if writer_nick in participants:
+        phenny.say('Geen zorgen %s, ik was nog niet vergeten dat je meedoet :-)' % writer_nick)
+        return
+
+    _call_django('api/war/participate/', 'POST', {'id': war_id, 'writer': writer_nick})
+
+    phenny.say('OK, ik verwittig je persoonlijk 10 seconden voordat war %s begint, en nog eens wanneer de war eindigt, %s' % (war_id, writer_nick))
+
+participate.commands = ['participate']
 
 if __name__ == '__main__':
     print __doc__.strip()

@@ -57,7 +57,246 @@ class DummyInput:
         self.nick = nick if nick else 'Testie'
 
     def group(self, index):
-        return self.properties[index]
+        try:
+            retval = self.properties[index]
+        except IndexError:
+            retval = None
+        return retval
+
+
+class ParticipateTest(TestCase):
+    def setUp(self):
+        self.now = datetime.datetime.now()
+        self.start = self.now + datetime.timedelta(minutes=1) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        self.end = self.now + datetime.timedelta(minutes=2) - datetime.timedelta(microseconds=self.now.microsecond) - datetime.timedelta(seconds=self.now.second)
+        commands.getstatusoutput('python /home/erik/source/phennyfyxata/phennyfyxata/manage.py flush --noinput')
+
+    def test_no_args(self):
+        phenny = DummyPhenny()
+
+        nick = 'Testie'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+
+        nanowars.participate(phenny, inputobj)
+
+        phenny_said = filter(lambda said: 'Ja, maar waaraan wil je deelnemen, %s?' % nick in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should ask what to participate in, instead she said: %s' % '\n'.join(phenny.said)
+
+    def test_no_args_withdraw(self):
+        phenny = DummyPhenny()
+
+        nick = 'Testie'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('withdraw')
+
+        nanowars.withdraw(phenny, inputobj)
+
+        phenny_said = filter(lambda said: 'Ja, maar waaraan wil je niet meer deelnemen, %s?' % nick in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should ask what to withdraw from, instead she said %s' % '\n'.join(phenny.said)
+
+    def test_invalid_data(self):
+        phenny = DummyPhenny()
+
+        nick = 'Testie'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('999')
+
+        nanowars.participate(phenny, inputobj)
+
+        assert 'Die war ken ik niet, %s' % nick in phenny.said, 'Phenny should warn that she doesn\'t know an unplanned war.'
+
+    def test_participate(self):
+        nick = 'Testie'
+        phenny = DummyPhenny(self.start, self.end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('war 1')
+
+        nanowars.participate(phenny, inputobj)
+
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick in phenny.said, 'Phenny should confirm participation.'
+
+        time_to_wait = int(self.end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        expected_said = '%s, war 1 begint over 10 seconden.' % nick
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+        phenny_said = filter(lambda said: 'STOP' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people when stopping the war, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+
+    def test_participate_again(self):
+        nick = 'Testie'
+        phenny = DummyPhenny(self.start, self.end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('1')
+
+        nanowars.participate(phenny, inputobj)
+        nanowars.participate(phenny, inputobj)
+
+        assert 'Geen zorgen %s, ik was nog niet vergeten dat je meedoet :-)' % nick in phenny.said, 'Phenny should say that %s already participates' % nick
+
+        time_to_wait = int(self.end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        expected_said = '%s, war 1 begint over 10 seconden.' % nick
+        assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+        phenny_said = filter(lambda said: 'STOP' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people when stopping the war, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+
+    def test_two_participants(self):
+        nick = 'Testie'
+        nick2 = 'AnotherTester'
+        phenny = DummyPhenny(self.start, self.end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('1')
+
+        nanowars.participate(phenny, inputobj)
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick in phenny.said, 'Phenny should confirm participation.'
+
+        inputobj = DummyInput(nick2)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('1')
+
+        nanowars.participate(phenny, inputobj)
+
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick2 in phenny.said, 'Phenny should confirm participation.'
+
+        time_to_wait = int(self.end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        phenny_said = filter(lambda said: 'war 1 begint over 10 seconden' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+        assert nick2 in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick2, '\n'.join(phenny.said))
+        phenny_said = filter(lambda said: 'STOP' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people when stopping the war, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+        assert nick2 in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick2, '\n'.join(phenny.said))
+
+    def test_withdraw(self):
+        nick = 'Testie'
+        phenny = DummyPhenny(self.start, self.end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('war 1')
+
+        nanowars.participate(phenny, inputobj)
+
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick in phenny.said, 'Phenny should confirm participation.'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('withdraw')
+        inputobj.properties.append('1')
+
+        nanowars.withdraw(phenny, inputobj)
+
+        assert 'OK, ik schrap je uit de deelnemerslijst, %s.' % nick, 'Phenny should confirm that %s doesn\'t participate' % nick
+
+        time_to_wait = int(self.end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        expected_said = '%s, war 1 begint over 10 seconden.' % nick
+        assert expected_said not in phenny.said, 'Expected phenny not to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
+        phenny_said = filter(lambda said: 'STOP' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should stopped the war, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick not in phenny_said[0], 'Phenny should not have notified %s when stopping the war, instead she said: %s' % '\n'.join(phenny.said)
+
+    def test_withdraw_not_participating(self):
+        nick = 'Testie'
+        phenny = DummyPhenny(self.start, self.end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (self.start.strftime('%H:%M'), self.end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('withdraw')
+        inputobj.properties.append('1')
+
+        nanowars.withdraw(phenny, inputobj)
+
+        assert 'Je deed niet mee, %s :-)' % nick in phenny.said, 'Phenny should tell %s that he wasn\'t participating.'
+
+    def test_one_of_two_withdraws(self):
+        nick = 'Testie'
+        nick2 = 'AnotherTester'
+        start = self.start + datetime.timedelta(minutes=1)
+        end = self.end + datetime.timedelta(minutes=1)
+        phenny = DummyPhenny(start, end)
+
+        inputobj = DummyInput()
+        inputobj.properties.append('war')
+        inputobj.properties.append('%s %s' % (start.strftime('%H:%M'), end.strftime('%H:%M')))
+        nanowars.war(phenny, inputobj)
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('1')
+
+        nanowars.participate(phenny, inputobj)
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick in phenny.said, 'Phenny should confirm participation.'
+
+        inputobj = DummyInput(nick2)
+        inputobj.properties.append('participate')
+        inputobj.properties.append('1')
+
+        nanowars.participate(phenny, inputobj)
+
+        assert 'OK, ik verwittig je persoonlijk 10 seconden voordat war 1 begint, en nog eens wanneer de war eindigt, %s' % nick2 in phenny.said, 'Phenny should confirm participation.'
+
+        inputobj = DummyInput(nick)
+        inputobj.properties.append('withdraw')
+        inputobj.properties.append('1')
+
+        nanowars.withdraw(phenny, inputobj)
+
+        assert 'OK, ik schrap je uit de deelnemerslijst, %s.' % nick, 'Phenny should confirm that %s doesn\'t participate' % nick
+
+        time_to_wait = int(end.strftime('%s')) - time.time()
+        time.sleep(time_to_wait + 5)
+
+        phenny_said = filter(lambda said: 'war 1 begint over 10 seconden' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick not in phenny_said[0], 'Phenny should not have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+        assert nick2 in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick2, '\n'.join(phenny.said))
+        phenny_said = filter(lambda said: 'STOP' in said, phenny.said)
+        assert len(phenny_said) == 1, 'Phenny should have notified people when stopping the war, instead she said: %s' % '\n'.join(phenny.said)
+        assert nick not in phenny_said[0], 'Phenny should not have notified %s when stopping the war, instead she said: %s' % (nick, '\n'.join(phenny.said))
+        assert nick2 in phenny_said[0], 'Phenny should have notified %s when stopping the war, instead she said: %s' % (nick2, '\n'.join(phenny.said))
 
 
 class WarTest(TestCase):
@@ -97,14 +336,14 @@ class WarTest(TestCase):
 
         expected_said = 'Ik zal het stopsein geven om %s.' % end.strftime('%H:%M')
         assert expected_said in phenny.said, 'Expected phenny to say %s, instead she said %s' % (expected_said, '\n'.join(phenny.said))
-        expected_unsaid = 'Ik zal het startsein geven om %s.' % self.now.strftime('%H:%M')
+        expected_unsaid = 'Ik zal het startsein geven voor war 1 om %s.' % self.now.strftime('%H:%M')
         assert expected_unsaid not in phenny.said, 'Expected phenny not to say %s, instead she said %s' % (expected_unsaid, '\n'.join(phenny.said))
 
         time_to_wait = int(end.strftime('%s')) - time.time()
 
         time.sleep(time_to_wait + 5)
 
-        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
+        assert len(filter(lambda x: 'War 1: STOP' in x, phenny.said)) > 0, 'phenny.say was not called with STOP'
 
     def test_war(self):
         phenny = DummyPhenny(self.start, self.end)
@@ -120,7 +359,7 @@ class WarTest(TestCase):
                 self.end.strftime('%H:%M'),
                 duration,
                 'minuut' if duration == 1 else 'minuten') in phenny.said, 'phenny.say was not called with START'
-        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
+        assert len(filter(lambda x: 'War 1: STOP' in x, phenny.said)) > 0, 'phenny.say was not called with STOP'
         assert '3' in phenny.said, 'phenny.say was not called with 3'
         assert '2' in phenny.said, 'phenny.say was not called with 2'
         assert '1' in phenny.said, 'phenny.say was not called with 1'
@@ -164,7 +403,7 @@ class WarTest(TestCase):
                 self.end.strftime('%H:%M'),
                 duration,
                 'minuut' if duration == 1 else 'minuten') in phenny.said, 'phenny.say was not called with START'
-        assert len(filter(lambda x: x.startswith('War 2: STOP'), phenny.said)) > 0, 'phenny.say was not called with STOP'
+        assert len(filter(lambda x: 'War 2: STOP' in x, phenny.said)) > 0, 'phenny.say was not called with STOP'
         assert '3' in phenny.said, 'phenny.say was not called with 3'
         assert '2' in phenny.said, 'phenny.say was not called with 2'
         assert '1' in phenny.said, 'phenny.say was not called with 1'
@@ -176,7 +415,7 @@ class WarTest(TestCase):
                 phenny2.expected_end.strftime('%H:%M'),
                 duration,
                 'minuut' if duration == 1 else 'minuten') in phenny2.said, 'phenny2.say was not called with START'
-        assert len(filter(lambda x: x.startswith('War 1: STOP'), phenny2.said)) > 0, 'phenny2.say was not called with STOP'
+        assert len(filter(lambda x: 'War 1: STOP' in x, phenny2.said)) > 0, 'phenny2.say was not called with STOP'
         assert '3' in phenny2.said, 'phenny2.say was not called with 3'
         assert '2' in phenny2.said, 'phenny2.say was not called with 2'
         assert '1' in phenny2.said, 'phenny2.say was not called with 1'
@@ -237,13 +476,23 @@ class ScoreTest(TestCase):
         inputobj.properties.append('999 200')
         nanowars.score(phenny, inputobj)
 
-        assert 'Die war ken ik niet, %s' % self.nick in phenny.said
+        assert "Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % 999 in phenny.said
 
     def test_invalid_data(self):
         phenny = DummyPhenny()
         inputobj = DummyInput(self.nick)
         inputobj.properties.append('score')
         inputobj.properties.append('abc def')
+
+        nanowars.score(phenny, inputobj)
+
+        assert 'Ik heb twee getalletjes nodig, %s: het nummer van de war gevolgd door je score' % self.nick in phenny.said, 'Phenny did not say what was wrong, instead she said: %s' % '\n'.join(phenny.said)
+
+    def test_not_enough_data(self):
+        phenny = DummyPhenny()
+        inputobj = DummyInput(self.nick)
+        inputobj.properties.append('score')
+        inputobj.properties.append('942')
 
         nanowars.score(phenny, inputobj)
 
