@@ -79,7 +79,10 @@ def _call_django(location, method='GET', urldata=None):
     if result.status_code == 404:
         return None
     else:
-        return json.loads(result.content)
+        try:
+            return json.loads(result.content)
+        except ValueError:
+            return result.content
 
 
 def _get_war_info(path):
@@ -156,8 +159,7 @@ war.example = '.war 15:50 16:00'
 
 
 def stop_war(phenny, war_id):
-    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
-    participants = json.loads(result.content)
+    participants = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
     participantstring = ', '.join(participants) if participants else ''
 
@@ -165,8 +167,7 @@ def stop_war(phenny, war_id):
 
 
 def warn_participants_start(phenny, war_id):
-    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
-    participants = json.loads(result.content)
+    participants = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
     if participants:
         phenny.say('%s, war %s begint over 10 seconden.' % (', '.join(participants), war_id))
@@ -209,7 +210,6 @@ def score(phenny, input):
 
     war_info = _call_django('api/war/info/', 'POST', {'id': war_id})
 
-    war_info = json.loads(result.content)
     if not war_info:
         phenny.say("Volgens de annalen bestaat war %s niet. Ik verlies geen documenten, dus ik vermoed dat je je vergist met het ID :-) " % war_id)
         return
@@ -254,9 +254,7 @@ def withdraw(phenny, input):
     if not war_id:
         return
 
-    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
-
-    participants = json.loads(result.content)
+    participants = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
     if writer_nick not in participants:
         phenny.say('Je deed niet mee, %s :-)' % writer_nick)
@@ -279,17 +277,13 @@ def participate(phenny, input):
     if not war_id:
         return
 
-    result = _call_django('api/war/info/', 'POST', {'id': war_id})
-
-    war_info = json.loads(result.content)
+    war_info = _call_django('api/war/info/', 'POST', {'id': war_id})
 
     if not war_info:
         phenny.say('Die war ken ik niet, %s' % writer_nick)
         return
 
-    result = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
-
-    participants = json.loads(result.content)
+    participants = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
     if writer_nick in participants:
         phenny.say('Geen zorgen %s, ik was nog niet vergeten dat je meedoet :-)' % writer_nick)
