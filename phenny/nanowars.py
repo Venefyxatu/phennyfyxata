@@ -236,7 +236,10 @@ score.example = '.score 1 2003'
 
 def _get_warid(phenny, args, writer_nick):
 
-    match = re.match(WARID_REGEX, args).groupdict()
+    match = re.match(WARID_REGEX, args)
+
+    if match:
+        match = match.groupdict()
 
     if not 'war_id' in match:
         phenny.say('Oei, ik begrijp niet welke war je bedoelt, %s' % writer_nick)
