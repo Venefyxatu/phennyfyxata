@@ -20,7 +20,19 @@ STOPQUOTES = ['Hammertime!',
 CONTESTS = ['Het wereldkampioenschap zakkenvullen?',
             'Een wedstrijdje uit de maat dansen?',
             'De Olympische spelen?',
-            'Een cursus onderwatermandjesvlechten voor gevorderden?']
+            'Een cursus onderwatermandjesvlechten voor gevorderden?',
+            'Een cursus kleiduifschieten?',
+            'Een potje "wie kan het beste fangirlen"?',
+            'Een workshop pottenbakken op 32.000 voet?',
+            'De jaarlijkse tentoonstelling van een willekeurige snorrenclub?',
+            'De reenactment (nu met ECHT slachtoffer!) van een gruwelijke moord?',
+            'Een rubberen eendjes-race? ( http://www.topendsports.com/sport/unusual/duck-racing.htm )',
+            'Het kampioenschap wormen charmeren?',
+            'Het wereld saunakampioenschap?',
+            'Het wereldkampioenschap extreem strijken (in vrije val)?',
+            'De Miss Russisch Leger verkiezing?',
+            'Een poging voor het wereldrecord langste gevangenisstraf?',
+            'Het meest recente gedoemd-tot-mislukken plan van Pinky and the Brain?']
 
 STARTSTOP_REGEX = re.compile('(?P<start>(busy|\d{1,2}:\d{1,2})) (?P<end>\d{1,2}:\d{1,2})')
 WARID_REGEX = re.compile('(war )?(?P<war_id>\d+)')
