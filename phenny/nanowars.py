@@ -183,9 +183,9 @@ def warn_participants_start(phenny, war_id):
 
     if participants:
         participants = ', '.join(participants)
-        chunks = [participants[x:x+10] for x in xrange(0, len(participants), 10)]
+        chunks = zip(*[iter(participants.split(','))]*5)
         for chunk in chunks:
-            phenny.say('%s, war %s begint over 10 seconden.' % (chunk, war_id))
+            phenny.say('%s, war %s begint over 10 seconden.' % (','.join(chunk), war_id))
 
 
 def plannedwars(phenny, input):
