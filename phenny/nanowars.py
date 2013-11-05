@@ -177,13 +177,23 @@ def stop_war(phenny, war_id):
 
     phenny.say('%s War %s: STOP - %s' % (participantstring, war_id, random.choice(STOPQUOTES)))
 
+def get_divider(li):
+    num = len(li)
+    if num == 1:
+        return 1
+    else:
+        if num > 10:
+            num = 10
+        for x in xrange(num -1, 1, -1):
+            if num % x == 0:
+                return x
+    return num
 
 def warn_participants_start(phenny, war_id):
     participants = _call_django('api/war/listparticipants/', 'POST', {'id': war_id})
 
     if participants:
-        participants = ', '.join(participants)
-        chunks = zip(*[iter(participants.split(','))]*5)
+        chunks = zip(*[iter(participants)]*get_divider(participants))
         for chunk in chunks:
             phenny.say('%s, war %s begint over 10 seconden.' % (','.join(chunk), war_id))
 
