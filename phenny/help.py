@@ -112,6 +112,10 @@ def withdraw_help(phenny):
     phenny.say('Als je voor een war toch geen verwittiging wil ontvangen, zeg dan .withdraw <war nr>.')
 
 
+def genre_help(phenny):
+    phenny.say("Als je een willekeurig genre wil weet ik er wel een paar.")
+    phenny.say("Zeg gewoon \"geef me eens een genre\", of \"geef <nick> een genre\"")
+
 def help(phenny, input):
     """
     Show the help
@@ -137,6 +141,8 @@ def help(phenny, input):
         participate_help(phenny)
     elif arguments == "withdraw":
         withdraw_help(phenny)
+    elif arguments in ["genre", "genres"]:
+        genre_help(phenny)
     else:
         general_help(phenny)
 
