@@ -13,7 +13,10 @@ def genre(phenny, input):
               'aliens in fantasy', 'kiezeldetective',
               'macho women with guns', 'heroic bloodshed',
               'zombie komedie', 'sumodrama', 'ijslolliepolitiek',
-              'lantaarnpaalsatire', 'landbouw op zee actie']
+              'lantaarnpaalsatire', 'landbouw op zee actie',
+              'kattige karikatuur', 'road trip liedjesbundel',
+              'mythologische detective', 'therapeutische thriller',
+              'robotwestern']
     phenny.say(random.choice(genres))
 
 
