@@ -16,7 +16,9 @@ def genre(phenny, input):
               'lantaarnpaalsatire', 'landbouw op zee actie',
               'kattige karikatuur', 'road trip liedjesbundel',
               'mythologische detective', 'therapeutische thriller',
-              'robotwestern']
+              'robotwestern', 'privatiserende plotbunnies',
+              'rookworsten romance', 'complex computerprobleem detective',
+              ]
     phenny.say(random.choice(genres))
 
 
