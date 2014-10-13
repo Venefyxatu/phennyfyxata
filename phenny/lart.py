@@ -27,7 +27,7 @@ def adjust(phenny, arguments, asker):
     print '>%s<' % arguments
     if not arguments or arguments.lower().strip() in ["phenny", "phennyfyxata"]:
         arguments = asker
-    elif arguments.lower().strip() in ['vene', 'venefyxatu']:
+    elif arguments.lower().strip() in ['vene', 'venefyxatu', 'de chef']:
         phenny.say('Geweld gebruiken tegen de chef, %s? Ben je gek?' % asker)
         return
     elif (arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf', 'evil phenny']
