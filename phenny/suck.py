@@ -27,7 +27,7 @@ def suck(phenny, input):
         phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
 
 
-suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Gg][Tt]).*'
+suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Ii][Gg][Tt]).*'
 
 if __name__ == '__main__':
     print __doc__.strip()
