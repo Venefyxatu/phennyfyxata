@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import time
 import random
 
 
@@ -12,9 +13,14 @@ def suck(phenny, input):
     Phenny suckt soms.
     """
     if random.random() < 0.3:
-        chosen = random.choice(SUCK_CHOICES)
         asker = input.nick
-        phenny.say(chosen % tuple(asker for x in range(chosen.count('%s'))))
+        action = chr(1) + "ACTION "
+        phenny.say('%s neemt een heel lang rietje' % action)
+        time.sleep(0.2)
+        phenny.say('%s stopt het in het drankje van %s' % (action, asker))
+        time.sleep(0.2)
+        phenny.say('%s drinkt het leeg' % action)
+        time.sleep(0.2)
         phenny.say('soms wel ja')
 
 
