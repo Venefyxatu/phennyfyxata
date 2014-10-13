@@ -12,8 +12,8 @@ def suck(phenny, input):
     """
     Phenny suckt soms.
     """
+    asker = input.nick
     if random.random() < 0.3:
-        asker = input.nick
         action = chr(1) + "ACTION "
         phenny.say('%s neemt een heel lang rietje' % action)
         time.sleep(0.2)
