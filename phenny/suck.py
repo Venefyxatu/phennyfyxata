@@ -24,7 +24,7 @@ def suck(phenny, input):
         phenny.say('soms wel ja')
         time.sleep(0.2)
     else:
-        phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
+        phenny.say('Zusje\? Kan jij %s even laten weten wat we daarvan vinden\?' % asker)
 
 
 suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Gg][Tt]).*'

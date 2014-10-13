@@ -71,8 +71,9 @@ def lart(phenny, input):
     Insult a user
     """
     print "%s New command received in lart module" % time.localtime()
-    arguments = input.group(2)
     command = input.group(1)
+    if not input.startswith('Zusje'):
+        arguments = input.group(2)
 
     if command == "addlart" and input.owner:
         addTool(phenny, arguments)
