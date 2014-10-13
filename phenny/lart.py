@@ -98,7 +98,7 @@ def setup(self):
 
 lart.commands = ["lart", "addlart"]
 lart.example = '.lart username'
-lart.rule = r'Zusje? Kan jij (.*) even laten weten wat we daarvan vinden?'
+lart.rule = r'Zusje\? Kan jij (.*) even laten weten wat we daarvan vinden\?'
 
 if __name__ == '__main__':
     print __doc__.strip()
