@@ -74,10 +74,15 @@ def lart(phenny, input):
     arguments = input.group(2)
     command = input.group(1)
 
-    if command == "lart":
-        adjust(phenny, arguments, input.nick)
-    elif command == "addlart" and input.owner:
+    if command == "addlart" and input.owner:
         addTool(phenny, arguments)
+        return
+
+    if input.startswith('Zusje?'):
+        if input.nick == 'Phennyfyxata':
+            adjust(phenny, input.groups()[0], input.nick)
+    else:
+        adjust(phenny, arguments, input.nick)
 
 
 def setup(self):
@@ -92,6 +97,7 @@ def setup(self):
 
 lart.commands = ["lart", "addlart"]
 lart.example = '.lart username'
+lart.rule = r'Zusje? Kan jij (.*) even laten weten wat we daarvan vinden?'
 
 if __name__ == '__main__':
     print __doc__.strip()
