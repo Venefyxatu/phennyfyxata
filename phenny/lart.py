@@ -14,7 +14,13 @@ REFUSAL_CHOICES = ['Zou je wel willen he, grapjas?',
                    "Maar... maar... maar... :'(",
                    'In je dromen!',
                    'Yeah, right! Goeie poging!',
-                   'Heee, wacht eens even...!']
+                   'Heee, wacht eens even...!',
+                   'Oh, hoe gemeen!',
+                   'Wat denk je dat ik ben? Dom?',
+                   'Ga jij eerst maar een rondje stroopworstelen met een leger mieren, %s!',
+                   'Jezelf zal je bedoelen',
+                   'Har-de-har har, %s',
+                   'Daarvoor heb ik niet genoeg alcohol in me, %s']
 
 
 def adjust(phenny, arguments, asker):
@@ -24,9 +30,10 @@ def adjust(phenny, arguments, asker):
     elif arguments.lower().strip() in ['vene', 'venefyxatu']:
         phenny.say('Geweld gebruiken tegen de chef, %s? Ben je gek?' % asker)
         return
-    elif (arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf']
+    elif (arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf', 'evil phenny']
           and asker.lower() in ['vene', 'venefyxatu']):
-        phenny.say(random.choice(REFUSAL_CHOICES))
+        refusal = random.choice(REFUSAL_CHOICES)
+        phenny.say(refusal % tuple(asker for x in range(refusal.count('%s'))))
         return
 
     action = chr(1) + "ACTION "
