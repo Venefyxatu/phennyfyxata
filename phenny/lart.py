@@ -10,11 +10,25 @@ insultCache = deque()
 maxCacheSize = 5
 insultStore = "/opt/projects/evilphenny/lartstore.txt"
 
-def adjust(phenny, arguments, asker):
-    if not arguments or arguments.lower() in ["phenny", "phennyfyxata"]:
-        arguments = asker
+REFUSAL_CHOICES = ['Zou je wel willen he, grapjas?',
+                   "Maar... maar... maar... :'(",
+                   'In je dromen!',
+                   'Yeah, right! Goeie poging!',
+                   'Heee, wacht eens even...!']
 
-    action = chr(1)+"ACTION "
+
+def adjust(phenny, arguments, asker):
+    if not arguments or arguments.lower() in ["phenny", "phennyfyxata", "evil", "evilphenny"]:
+        arguments = asker
+    elif arguments.lower() in ['vene', 'venefyxatu']:
+        phenny.say('Geweld gebruiken tegen de chef, %s? Ben je gek?' % asker)
+        return
+    elif (arguments.lower() in ['evil', 'evilphenny', 'jezelf', 'zichzelf']
+          and asker.lower() in ['vene', 'venefyxatu']):
+        phenny.say(random.choice(REFUSAL_CHOICES))
+        return
+
+    action = chr(1) + "ACTION "
 
     chosen = random.choice(insults)
 
@@ -26,11 +40,13 @@ def adjust(phenny, arguments, asker):
 
     insultCache.append(chosen)
 
-    phenny.say(action + chosen % arguments)
+    phenny.say(action + chosen % tuple(arguments for x in range(chosen.count('%s'))))
+
 
 def addTool(phenny, arguments):
     if not '##' in arguments:
-        phenny.say("Zorg ervoor dat je ## gebruikt in je lart - zo weet ik waar ik de nickname moet zetten.")
+        phenny.say("Zorg ervoor dat je ## gebruikt in je lart - "
+                   "zo weet ik waar ik de nickname moet zetten.")
         return
 
     insults.append(arguments.replace('##', '%s'))
@@ -54,6 +70,7 @@ def lart(phenny, input):
         adjust(phenny, arguments, input.nick)
     elif command == "addlart" and input.owner:
         addTool(phenny, arguments)
+
 
 def setup(self):
     global insults
