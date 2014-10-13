@@ -18,12 +18,14 @@ REFUSAL_CHOICES = ['Zou je wel willen he, grapjas?',
 
 
 def adjust(phenny, arguments, asker):
-    if not arguments or arguments.lower() in ["phenny", "phennyfyxata", "evil", "evilphenny"]:
+    print '>%s<' % arguments
+    if not arguments or arguments.lower().strip() in ["phenny", "phennyfyxata", "evil",
+                                                      "evilphenny"]:
         arguments = asker
-    elif arguments.lower() in ['vene', 'venefyxatu']:
+    elif arguments.lower().strip() in ['vene', 'venefyxatu']:
         phenny.say('Geweld gebruiken tegen de chef, %s? Ben je gek?' % asker)
         return
-    elif (arguments.lower() in ['evil', 'evilphenny', 'jezelf', 'zichzelf']
+    elif (arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf']
           and asker.lower() in ['vene', 'venefyxatu']):
         phenny.say(random.choice(REFUSAL_CHOICES))
         return
