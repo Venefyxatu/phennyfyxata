@@ -14,3 +14,6 @@ slaat %s met een grote koekenpan
 geeft %s een koekje en laat 2 hongerige sumoworstelaars uit de kelder
 hangt een rode cape rond de schouders van %s en gaat snel opzij voor de stier die niemand heeft opgemerkt
 hangt een bordje met "schop me" op de rug van %s, giechelt kinderachtig en geeft %s een ENORME schop
+schiet een propje naar %s
+gooit met krijtjes naar %s
+verwijdert stiekem de backups van alles wat %s voor nano geschreven heeft
