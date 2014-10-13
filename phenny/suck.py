@@ -11,7 +11,11 @@ def suck(phenny, input):
     """
     Phenny suckt soms.
     """
-    phenny.say(random.choice(SUCK_CHOICES))
+    if random.random() < 0.3:
+        chosen = random.choice(SUCK_CHOICES)
+        asker = input.nick
+        phenny.say(chosen % tuple(asker for x in range(chosen.count('%s'))))
+        phenny.say('soms wel ja')
 
 
 suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Gg][Tt])'
