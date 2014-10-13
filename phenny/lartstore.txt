@@ -17,3 +17,4 @@ hangt een bordje met "schop me" op de rug van %s, giechelt kinderachtig en geeft
 schiet een propje naar %s
 gooit met krijtjes naar %s
 verwijdert stiekem de backups van alles wat %s voor nano geschreven heeft
+doet laxeermiddel in het drankje van %s
