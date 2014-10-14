@@ -18,6 +18,7 @@ def genre(phenny, input):
               'mythologische detective', 'therapeutische thriller',
               'robotwestern', 'privatiserende plotbunnies',
               'rookworsten romance', 'complex computerprobleem detective',
+              'flessenpostroman',
               ]
     phenny.say(random.choice(genres))
 
