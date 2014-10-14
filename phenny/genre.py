@@ -23,7 +23,8 @@ def genre(phenny, input):
               'mythologische detective', 'therapeutische thriller',
               'robotwestern', 'privatiserende plotbunnies',
               'rookworsten romance', 'complex computerprobleem detective',
-              'flessenpostroman',
+              'flessenpostroman', 'held-op-sokken-avontuur',
+              'geitewollensokkenmysterie', 'culinaire science fiction',
               ]
 
     chosen = random.choice(genres)
