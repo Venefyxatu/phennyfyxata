@@ -2,6 +2,11 @@
 # coding=utf-8
 
 import random
+from collections import deque
+
+
+genre_cache = deque()
+max_cache_size = 5
 
 
 def genre(phenny, input):
@@ -20,7 +25,17 @@ def genre(phenny, input):
               'rookworsten romance', 'complex computerprobleem detective',
               'flessenpostroman',
               ]
-    phenny.say(random.choice(genres))
+
+    chosen = random.choice(genres)
+    while chosen in genre_cache:
+        chosen = random.choice(genres)
+
+    if len(genre_cache) > max_cache_size:
+        genre_cache.popleft()
+
+    genre_cache.append(chosen)
+
+    phenny.say(chosen)
 
 
 genre.rule = r'.*(geef.*een genre|heb je nu al een genre voor.*\?)'
