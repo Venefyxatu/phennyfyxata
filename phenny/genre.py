@@ -25,6 +25,8 @@ def genre(phenny, input):
               'rookworsten romance', 'complex computerprobleem detective',
               'flessenpostroman', 'held-op-sokken-avontuur',
               'geitewollensokkenmysterie', 'culinaire science fiction',
+              'broodje aap verhaal', 'database shenanigans',
+              'hoelahoepieromantiek',
               ]
 
     chosen = random.choice(genres)
