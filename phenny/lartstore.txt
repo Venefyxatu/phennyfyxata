@@ -19,3 +19,4 @@ gooit met krijtjes naar %s
 verwijdert stiekem de backups van alles wat %s voor nano geschreven heeft
 doet laxeermiddel in het drankje van %s
 laat de computer van %s ontploffen
+stopt een tijdbom in de computer van %s
