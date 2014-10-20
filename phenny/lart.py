@@ -30,8 +30,7 @@ def adjust(phenny, arguments, asker):
     elif arguments.lower().strip() in ['vene', 'venefyxatu', 'de chef']:
         phenny.say('Geweld gebruiken tegen de chef, %s? Ben je gek?' % asker)
         return
-    elif (arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf', 'evil phenny']
-          and asker.lower() in ['vene', 'venefyxatu']):
+    elif arguments.lower().strip() in ['evil', 'evilphenny', 'jezelf', 'zichzelf', 'evil phenny']:
         refusal = random.choice(REFUSAL_CHOICES)
         phenny.say(refusal % tuple(asker for x in range(refusal.count('%s'))))
         return
