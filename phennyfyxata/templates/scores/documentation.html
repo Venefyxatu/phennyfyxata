@@ -23,6 +23,11 @@
     {% trans "Use this command to make Phenny give you a list of which wars are currently active, when they will end and how long they are." %}
     <li /><span class="command">.war busy [endtime]</span><br />
     {% trans "If a war is already in progress and you just want her to end it, this is the way to let her know. Instead of a starttime, you use the word busy." %}
+    <li /><span class="command">.participate [warnr]</span><br />
+    If you want a personal notification 10 seconds before the war starts, and another one the moment the war ends, use this command. Phenny will mention your nick in the chatroom. Many chat clients will give you a signal when that happens!<br />
+    Warnr is the number of the war. Phenny announced this.
+    <li /><span class="command">.withdraw [warnr]</span><br />
+    If you change your mind and don't want to participate after all, you can use this command to stop Phenny from highlighting you.
     <li /><span class="command">.score [warnr] [score]</span><br />
     {% trans "Register your score with this command. Don't worry too much about the war number - she will tell you what it is when the war starts and when it ends." %}
     <li /><span class="command">.participate [warnr]</span><br />
@@ -43,6 +48,12 @@
     </ul>
     <li /><span class="command">geef me een genre</span><br />
     If she sees you saying this, Phenny will blurt out a random genre for you to write in.
+    <li /><span class="command">.noms</span>.noms</span> or <span class="command">.eten</span><br />
+    Hungry? Phenny loves making sandwiches! She loves it a lot even. In fact, when she's in the kitchen, she can be <strong>very</strong> enthusiastic. You have been warned.
+    <li /><span class="command">.plannedwars</span><br />
+    Phenny will give you an overview of which wars are planned.
+    <li /><span class="command">.activewars</span><br />
+    You'll get a list of the wars which are currently on-going. Useful if you'd like to join in!
 </ul>
 
 {% endblock %}
