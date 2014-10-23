@@ -28,6 +28,7 @@ def genre(phenny, input):
               'broodje aap verhaal', 'database shenanigans',
               'hoelahoepieromantiek', 'tijdreizende theezakjes',
               'maniakale mandalas',
+              'historische thriller met planetoïden-etende melkwegen',
               ]
 
     chosen = random.choice(genres)
