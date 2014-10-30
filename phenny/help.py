@@ -43,6 +43,7 @@ def motivation_help(phenny, input):
             "Hier is een tip van F. Scott Fitzgerald, %s: \"What people are ashamed of usually makes a good story.\". Ga nu, en schrijf!" % input.nick,
             "Probeer dit eens, %s: http://bit.ly/ps4KZ2" % input.nick,
             "Zoals Jarsto het zo mooi zegt: BICHOK! Butt In Chair, Hands On Keyboard.",
+            "Dinosaurs drop from the sky using parachutes. Schrijf!",
             ]
 
     chosen = random.choice(choices)
