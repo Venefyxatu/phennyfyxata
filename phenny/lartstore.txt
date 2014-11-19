@@ -22,3 +22,4 @@ laat de computer van %s ontploffen
 stopt een tijdbom in de computer van %s
 prikt %s met een pen in de rug en gromt, "en nu schrijven!"
 plakt %s tegen de muur met behanglijm
+stopt %s onder de vloerplanken
