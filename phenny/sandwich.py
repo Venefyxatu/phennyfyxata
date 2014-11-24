@@ -29,7 +29,9 @@ sandwich.commands = ["eten", "noms"]
 sandwich.priority = "low"
 
 FOODS = ['katten', 'honden', 'vissen', 'slangen', 'muizen', 'uilen',
-         'valken', 'collega-', ]
+         'valken', 'collega-', 'kraanwerkers-', 'circusartiesten',
+         'demonen', 'duivels', 'voetballers', 'trombonespelers',
+         'astronauten', 'CEO-', 'nepcavia-', 'stripfiguren']
 
 
 def feed(phenny, pet, owner):
