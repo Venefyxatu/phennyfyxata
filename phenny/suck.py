@@ -13,6 +13,10 @@ def suck(phenny, input):
     Phenny suckt soms.
     """
     asker = input.nick
+    if 'stom' in input.group() or 'trut' in input.group():
+        phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
+        return
+
     if random.random() < 0.3:
         action = chr(1) + "ACTION "
         phenny.say('%s neemt een heel lang rietje' % action)
@@ -27,7 +31,7 @@ def suck(phenny, input):
         phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
 
 
-suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Ii][Gg][Tt]).*'
+suck.rule = r'[Pp][Hh][Ee][Nn]{2}[Yy] ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Ii][Gg][Tt]|is stom|is een trut).*'
 
 if __name__ == '__main__':
     print __doc__.strip()
