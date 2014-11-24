@@ -34,11 +34,12 @@ FOODS = ['katten', 'honden', 'vissen', 'slangen', 'muizen', 'uilen',
          'astronauten', 'CEO-', 'nepcavia-', 'stripfiguren']
 
 
-def feed(phenny, pet, owner):
+def feed(phenny, article, pet, owner):
     action = chr(1) + "ACTION "
 
     randomfood = random.choice(FOODS)
-    phenny.say(action + 'geeft de %s van %s een blik %seten' % (pet,
+    phenny.say(action + 'geeft %s %s van %s een blik %seten' % (article,
+                                                                pet,
                                                                 owner,
                                                                 randomfood))
 
@@ -47,9 +48,10 @@ def petfood(phenny, input):
     """
     Feed a user's pet
     """
+    article = input.group(1)
     pet = input.group(2)
     owner = input.group(3)
-    feed(phenny, pet, owner)
+    feed(phenny, article, pet, owner)
 
 
 petfood.rule = r'(de|het) (.*) van (.*) heeft honger'
