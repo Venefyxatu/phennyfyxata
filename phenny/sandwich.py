@@ -47,12 +47,12 @@ def petfood(phenny, input):
     """
     Feed a user's pet
     """
-    pet = input.group(1)
-    owner = input.group(2)
+    pet = input.group(2)
+    owner = input.group(3)
     feed(phenny, pet, owner)
 
 
-petfood.rule = r'de (.*) van (.*) heeft honger'
+petfood.rule = r'(de|het) (.*) van (.*) heeft honger'
 
 if __name__ == '__main__':
     print __doc__.strip()
