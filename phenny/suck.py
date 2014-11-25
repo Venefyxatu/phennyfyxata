@@ -5,7 +5,12 @@ import time
 import random
 
 
-SUCK_CHOICES = ['neemt een heel lang rietje, stopt het in het drankje van %s en zuigt het leeg']
+ACTION = chr(1) + "ACTION "
+AFIN = chr(1)
+
+NICE_CHOICES = ['Aww, ik vind jou lief, %s!',
+                ACTION + ' knuffelt %s' + AFIN,
+                '%s: jij bent officieel cool!']
 
 
 def suck(phenny, input):
@@ -36,6 +41,18 @@ def suck(phenny, input):
 
 suck.rule = (r'(?i)(evil)?phenny(fyxata)? (suck(t|s)|zuigt|is '
              '(stom|een trut|een truttebol|een bitch))')
+
+
+def lief(phenny, input):
+    """
+    Maar ze is eigenlijk wel lief
+    """
+    asker = input.nick
+
+    phenny.say(NICE_CHOICES % asker)
+
+
+lief.rule = r'((?i)phenny(fyxata)? is (lief|aardig|cool)|ik hou van phenny(fyxata)?)'
 
 if __name__ == '__main__':
     print __doc__.strip()
