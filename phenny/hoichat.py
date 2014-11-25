@@ -13,7 +13,7 @@ def hoichat(phenny, input):
     phenny.say("%s %s" % (random.choice(greetings), input.nick))
 
 
-hoichat.rule = r'(?i)^(ho+i|ha+i|hello|hallo|hey)( chat| iedereen| phenny(fyxata)?|\!)?.*$'
+hoichat.rule = r'(?i)^(ho+i|ha+i|hello|hallo|hey)( chat| iedereen| phenny(fyxata)?|\!).*$'
 
 if __name__ == '__main__':
     print __doc__.strip()
