@@ -10,7 +10,9 @@ AFIN = chr(1)
 
 NICE_CHOICES = ['Aww, ik vind jou lief, %s!',
                 ACTION + ' knuffelt %s' + AFIN,
-                '%s: jij bent officieel cool!']
+                '%s: jij bent officieel cool!',
+                ACTION + ' knuffelt %s plat' +AFIN,
+                'lief van je, %s!']
 
 
 def suck(phenny, input):
