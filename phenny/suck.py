@@ -54,7 +54,7 @@ def lief(phenny, input):
     phenny.say(random.choice(NICE_CHOICES) % asker)
 
 
-lief.rule = (r'(?i)((ik vind phenny(fyxata)? |phenny(fyxata)? is )'
+lief.rule = (r'(?i).*((ik vind phenny(fyxata)? |phenny(fyxata)? is )'
              '(lief|aardig|cool)|ik hou van phenny(fyxata)?).*')
 
 if __name__ == '__main__':
