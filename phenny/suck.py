@@ -55,7 +55,7 @@ def lief(phenny, input):
 
 
 lief.rule = (r'(?i).*((ik vind phenny(fyxata)? |phenny(fyxata)? is )'
-             '(lief|aardig|cool)|ik hou van phenny(fyxata)?).*')
+             '(leuk|tof|lief|aardig|cool)|ik hou van phenny(fyxata)?).*')
 
 if __name__ == '__main__':
     print __doc__.strip()
