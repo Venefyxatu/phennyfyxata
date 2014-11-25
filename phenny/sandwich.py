@@ -38,7 +38,7 @@ def feed(phenny, article, pet, owner):
     action = chr(1) + "ACTION "
 
     randomfood = random.choice(FOODS)
-    phenny.say(action + 'geeft %s %s van %s een blik %seten' % (article,
+    phenny.say(action + 'geeft %s %s van %s een blik %seten' % (article.lower(),
                                                                 pet,
                                                                 owner,
                                                                 randomfood))
