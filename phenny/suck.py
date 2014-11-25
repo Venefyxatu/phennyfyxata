@@ -11,7 +11,7 @@ AFIN = chr(1)
 NICE_CHOICES = ['Aww, ik vind jou lief, %s!',
                 ACTION + ' knuffelt %s' + AFIN,
                 '%s: jij bent officieel cool!',
-                ACTION + ' knuffelt %s plat' +AFIN,
+                ACTION + ' knuffelt %s plat' + AFIN,
                 'lief van je, %s!']
 
 
@@ -55,7 +55,7 @@ def lief(phenny, input):
 
 
 lief.rule = (r'(?i).*((ik vind phenny(fyxata)? |phenny(fyxata)? is )'
-             '(leuk|tof|lief|aardig|cool)|ik hou van phenny(fyxata)?).*')
+             '(een schat|leuk|tof|lief|aardig|cool)|ik hou van phenny(fyxata)?).*')
 
 if __name__ == '__main__':
     print __doc__.strip()
