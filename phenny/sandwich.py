@@ -54,7 +54,7 @@ def petfood(phenny, input):
     feed(phenny, article, pet, owner)
 
 
-petfood.rule = r'(de|het) (.*) van (.*) heeft honger'
+petfood.rule = r'([Dd]e|[Hh]et) (.*) van (.*) (heeft|hebben) honger'
 
 if __name__ == '__main__':
     print __doc__.strip()
