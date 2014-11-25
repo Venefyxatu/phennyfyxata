@@ -44,7 +44,7 @@ def genre(phenny, input):
     phenny.say(chosen)
 
 
-genre.rule = r'.*([Gg]eef.*een genre|[Hh]eb je nu al een genre voor.*\?)'
+genre.rule = r'(?i).*(geef.*een genre|heb je nu al een genre voor.*\?)'
 
 if __name__ == '__main__':
     print __doc__.strip()

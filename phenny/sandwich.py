@@ -22,7 +22,10 @@ def sandwich(phenny, input):
                              'standaard', 'zand', 'heksen', 'mega-grote',
                              'rookworst', 'usbstick', 'rookworst-usbstick'))
     print '---'
-    phenny.say(action + "biedt " + input.nick + " een lekkere " + topping + " sandwich aan." + afin)
+    phenny.say("%s biedt %s een lekkere %s sandwich aan.%s" % (action,
+                                                               input.nick,
+                                                               topping,
+                                                               afin))
     print '---'
 
 sandwich.commands = ["eten", "noms"]
@@ -54,6 +57,7 @@ def petfood(phenny, input):
     feed(phenny, article, pet, owner)
 
 
+petfood.rule = r'(?i)(de|het) (.*) van (.*) (heeft|hebben) honger'
 petfood.rule = r'([Dd]e|[Hh]et) (.*) van (.*) (heeft|hebben) honger'
 
 if __name__ == '__main__':

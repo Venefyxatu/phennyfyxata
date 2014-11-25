@@ -31,7 +31,8 @@ def suck(phenny, input):
         phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
 
 
-suck.rule = r'([Ee][Vv][Ii][Ll])?[Pp][Hh][Ee][Nn]{2}[Yy]([Ff][Yy][Xx][Aa][Tt][Aa])? ([Ss][Uu][Cc][Kk]([Tt]|[Ss])|[Zz][Uu][Ii][Gg][Tt]|is stom|is een trut|is een truttebol|is een bitch).*'
+suck.rule = (r'(?i)(evil)?phenny(fyxata)? (suck(t|s)|zuigt|is '
+             '(stom|een trut|een truttebol|een bitch))')
 
 if __name__ == '__main__':
     print __doc__.strip()
