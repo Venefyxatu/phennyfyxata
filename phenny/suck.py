@@ -13,7 +13,10 @@ def suck(phenny, input):
     Phenny suckt soms.
     """
     asker = input.nick
-    if 'stom' in input.group() or 'trut' in input.group() or 'bitch' in input.group():
+    if ('stom' in input.group()
+            or 'trut' in input.group().lower()
+            or 'bitch' in input.group().lower()
+            or 'evil' in input.group().lower()):
         phenny.say('Zusje? Kan jij %s even laten weten wat we daarvan vinden?' % asker)
         return
 
