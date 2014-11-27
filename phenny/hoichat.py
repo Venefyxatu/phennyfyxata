@@ -10,7 +10,10 @@ def hoichat(phenny, input):
     """
     greetings = ['Hoi', 'Hallo', 'Hey', 'Dag', 'Wees gegroet,', 'Allo', 'Yo', 'Hai', 'Bonjour',
                  'Howdi', 'Hee']
-    phenny.say("%s %s" % (random.choice(greetings), input.nick))
+    if input.nick.lower() == 'maria':
+        phenny.say('Ave %s' % input.nick)
+    else:
+        phenny.say("%s %s" % (random.choice(greetings), input.nick))
 
 
 hoichat.rule = r'(?i)^(ho+i|ha+i|hello|hallo|hey)( chat| iedereen| phenny(fyxata)?).*$'
