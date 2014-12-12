@@ -42,7 +42,7 @@ def suck(phenny, input):
 
 
 suck.rule = (r'(?i)(evil)?phenny(fyxata)? (suck(t|s)|zuigt|is '
-             '(stom|een trut|een truttebol|een bitch))')
+             '(stom|een trut|een truttebol|een bitch|een stomme trut))')
 
 
 def lief(phenny, input):
