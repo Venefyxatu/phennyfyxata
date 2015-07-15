@@ -160,10 +160,8 @@ def war(phenny, input):
     wait_end = int(int(result['endtime']) - int(datetime.datetime.now().strftime('%s')))
     t_end = Timer(wait_end, stop_war, [phenny, result['id']])
     t_end.start()
-    t_score = Timer(wait_end + 2, phenny.say, ['War %s is voorbij. Je kan je score registreren met .score %s <score>' % (result['id'], result['id'])])
+    t_score = Timer(wait_end + 2, phenny.say, ['War %s is voorbij. Je kan je score registreren met .score %s <score> en de resultaten bekijken op http://phenny.venefyxatu.be/wars/%s/overview/' % (result['id'], result['id'], result['id'])])
     t_score.start()
-    t_deelnemers = Timer(wait_end + 3, phenny.say, ['Een overzichtje kan je vinden op http://phenny.venefyxatu.be/wars/%s/overview/' % result['id']])
-    t_deelnemers.start()
 
 
 war.commands = ['war']
