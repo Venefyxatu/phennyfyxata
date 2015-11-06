@@ -23,7 +23,8 @@ def spin(phenny, input):
 
 def rrload(phenny, input):
   if phenny.roulette['run']:
-    return "Er zit al een kogel in."
+    phenny.say('Eerst leegmaken, dan krijg je nieuwe kogels...')
+    return
   bullets = 1
   chambers = 6
   try:
